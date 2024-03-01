@@ -1,0 +1,120 @@
+int - 4 bytes
+floating point - 4 bytes
+char - 1 bytes
+strings - variable size
+arrays - variable size
+file handles - probably a standard struct
+
+declarations:
+    - int: int x;
+    - floating point: float x;
+    - characters: char x;
+    - strings: string x(length);
+    - arrays: array x(int|float|char|string);
+    - files: file x;
+
+assignments:
+    - int: x = 5;
+    - float: x = 5.5;
+    - characters: x = 'a';
+    - strings: x = 'string'
+    - arrays: array[5] = x;
+    - files: x = open_file("filename.extension")
+
+if else
+while
+do while (?)
+for
+for x in y
+
+some io support:
+    - writing and reading to and from files:
+        - file x = open_file("filename.extension");
+        - string y = read_line(x);
+        - char z = read_byte(x);
+        - write_line(x, "string");
+        - close_file(x)
+        - for line in x:
+            - string y = read_line(x)
+            - operation(y)
+        - for char in x:
+            - char y = read_byte(x)
+            - operation(y)
+
+operators -> / , * , + , - , %
+
+arrays should support:
+    - filter -> filter(array, condition):
+        for x in array, if condition(x) true keep x, else discard
+    - map -> map(array, function):
+        for x in array, x = function(x)
+    - be iterable -> for x in array{
+                        operation(x)
+                    }
+        this should perform the code in between {} for each element of the array
+
+user defined data types:
+    - struct x {
+        int y;
+        string z;
+        etc....
+    };
+
+user defined functions:
+    - func user_defined(int a, string b, array c){
+        *code*
+        return something;
+    };
+    - keyword func can be exchanged for int, float, string, char, array, void
+
+error handling?:
+    try{
+        *code*
+    }
+    except{
+        *code*
+    }
+    finally{
+        *code*  
+    }
+
+if else:
+    - if (expression){
+        *code*
+    }
+    else {
+        *code*
+    }
+
+for:
+    - for (a to b, none|iterate=x){
+        *code*
+    }
+
+while:
+    - while(condition){
+        *code*
+    }
+do...while:
+    - do {
+        *code*
+    } while(condition)
+
+array for:
+    - for (x in array){
+        *code which can use x*
+    }
+file for:
+    - 2 scenarios, one for reading all bytes in a file and one for reading all lines in a file
+    - file x = open_file("file.extension")
+    - for (line in x){
+        *code which can use line*
+    }
+    - for (char in x){
+        *code which can use char*
+    }
+    - "line" and "char" are part of the synatx. they can't be exchanged for other words
+
+
+grammar:
+    
