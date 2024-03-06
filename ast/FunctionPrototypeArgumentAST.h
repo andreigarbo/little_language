@@ -4,12 +4,14 @@
 #include "GenericAST.h"
 
 class FunctionPrototypeArgumentAST : public GenericAST {
+    std::string name;
     unique_ptr<GenericAST> value;
 
     public:
         FunctionPrototypeArgumentAST( 
+            std::string name,
             unique_ptr<GenericAST> value;
-        ) : value(std::move(value)) {}
+        ) : name(name), value(std::move(value)) {}
         Value *codegen() {}
 }
 

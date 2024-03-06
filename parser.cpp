@@ -26,7 +26,7 @@ static std::unique_ptr<FunctionPrototypeAST> LogErrorPrototype(const char *strin
     return nullptr;
 }
 
-//Start of int, float, string parsers
+//-----Start of int, float, string parsers
 
 static std::unique_ptr<GenericAST> ParseIntExpr(){
     auto value = std::make_unique<IntAST>(numeric_value_int);
@@ -46,7 +46,7 @@ static std::unique_ptr<GenericAST> ParseStringExpr(){
     return std::move(value);
 }
 
-//End of int, float, string parsers
+//------End of int, float, string parsers
 
 static std::unique_ptr<GenericAST> ParseBinaryExpr(){
     //TODO
@@ -60,7 +60,7 @@ static std::unique_ptr<GenericAST> ParseVariableNameExpr(){
     //auto value = std::make_unique<V
 }
 
-//Binary expression parsing start
+//-----Binary expression parsing start
 
 
 //this parses an addition/subtraction expression
@@ -124,16 +124,58 @@ static std::unique_ptr<GenericAST> ParseTermExpr(){
     }
 }
 
-//Binary expression parsing end
+//-----Binary expression parsing end
 
-//Function definition parsing start
+//-----Conditional statement parsing start
+
+static std::unique_ptr<GenericAST> IfStatementExpr() {
+    if (current_token == token_if) {
+        get_next_token();
+        if (current_token == '('){
+            get_next_token();
+            auto condition = ParseConditionExpr();
+            if (current_token == ')') {
+                get_next_token();
+                if (current_token == '{'){
+                    get_next_token();
+                    auto thenBody = ParseStatementsExpr();
+                    if (current_token == '}') {
+                        get_next_token();
+                        if (current_token == token_else) {
+                            get_next_token();
+                            if (current_token == '{'){
+                                get_next_token();
+                                auto elseBody = ParseStatementsExpr();
+                                if (current_token == '}') {
+                                    get_next_token();
+                                    unqiue_ptr<GenericAST> ifStatement;
+                                    ifStatement = IfASt(std::move(condition), std::move(thenBody), std::move(elseBody));
+                                    return ifStatement;
+                                } else {return LogError("Expected '}' in end of else block");}
+                            } else {return LogError("Expected '{' in beginning of else block");}
+                        } else {
+                            unique_ptr<GenericAST> ifStatement;
+                            ifStatement = IfAST(std::move(condition), std::move(body), nullptr);
+                            return ifStatement;
+                        }
+                    } else {return LogError("Expected '}' in end of then block");}
+                } else {return LogError("Expected '{' in beginning of then block");}
+            } else {return LogError("Expected ')' in end of condition block");}
+        } else {return LogError("Expected '(' in beginning of condition block");}
+    } else {return LogError("Expected 'if' in beginning of conditional statement");}
+}
+
+//-----Consitional statement parsing end
+
+
+//-----Function definition parsing start
 
 //this function parses the prototype of a function
 //e.g. int main (int arg, float val, string test)
 
 //TODO - modify function to generate FunctionPrototypeArgumentAST for each argument
 
-static std::unique_ptr<GenericAST> ParseFunctionPrototype(){
+static std::unique_ptr<GenericAST> ParseFunctionPrototypeExpr(){
     //checks if the first symbol is a type declaration  
     if (isTypeDeclaration(current_token)){
         //parses a string, which will be the type declaration
@@ -149,17 +191,13 @@ static std::unique_ptr<GenericAST> ParseFunctionPrototype(){
             get_next_token();
             //parsing arguments one by one
             if (isTypeDeclaration(current_token)){
-                std::vector<std::string> argumentList;
-                try {std::string argumentType = ParseStringExpr();} catch() {return LogError("Failed to parse function type");}
-                try {std::string argumentName = ParseStringExpr();} catch() {return LogError("Failed to parse function name");}
-                argumentList.push_back(argumentName);
-                //if we encounter ',' parse argument again until no more ','
+                std::vector<GenericAST> argumentList;
+                auto argument = ParseFunctionPrototypeArgumentExpr();
+                argumentList.push_back(argument);
                 while (current_token == ','){
                     get_next_token();
-                    try {std::string argumentType = ParseStringExpr();} catch() {return LogError("Failed to parse argument type");}
-                    try {std::string argumentName = ParseStringExpr();} catch() {return LogError("Failed to parse argument name");}
-                    argumentList.push_back(argumentType);
-                    argumentList.push_back(argumentName);
+                    auto argument = ParseFunctionPrototypeArgumentExpr();
+                    argumentList.push_back(argument);
                 }
                 if (current_token == ')'){
                     get_next_token();
@@ -175,6 +213,58 @@ static std::unique_ptr<GenericAST> ParseFunctionPrototype(){
     } else {return LogError("Expected function type at beginning of declaration");} //handles no string at start of line
 }
 
-//Function definition parsing end
+static std::unique_ptr<GenericAST> ParseFunctionPrototypeArgumentExpr() {
+    std::string argumentType = ParseStringExpr();
+    std::string argumentName = ParseStringExpr();
+    if (current_token == '='){
+        get_next_token();
+        switch (argumentType) {
+            case "int":
+                auto value = ParseIntExpr();
+                auto argument = std::make_unique<FunctionPrototypeArgumentIntAST>(argumentName, value);
+                return argument;
+                break;
+            case "float":
+                auto value = ParseFloatExpr();
+                auto argument = std::make_unique<FunctionPrototypeArgumentFloatAST>(argumentName, value);
+                return argument;
+                break;
+            case "string":
+                auto value = ParseStringExpr();
+                auto argument = std::make_unique<FunctionPrototypeArgumentStringAST>(argumentName, value);
+                return argument;
+                break;
+            case "default":
+                return LogError("Unexpected argument type for argument " + argumentName);
+                break;
+        }
+    } else {
+        switch(argumentType){
+            case "int":
+                auto argument = std::make_unique<FunctionPrototypeArgumentIntAST>(argumentName, nullptr);
+                return argument;
+                break;
+            case "float":
+                auto argument = std::make_unique<FunctionPrototypeArgumentFloatAST>(argumentName, nullptr);
+                return argument;
+                break;
+            case "string":
+                auto argument = std::make_unique<FunctionPrototypeArgumentStringAST>(argumentName, nullptr);
+                return argument;
+                break;
+            case "default":
+                return LogError("Unexpected argument type for argument " + argumentName);
+                break;
+        }
+    }
+}
 
-//int main(int arg, float val)
+static std::unique_ptr<GenericAST> ParseFunctionCallExpr() {
+    
+}
+
+//-----Function definition parsing end
+
+//-----Statement parsing start
+
+//-----Statement parsing end

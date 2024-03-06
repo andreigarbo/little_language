@@ -6,12 +6,14 @@
 #include "StringAST.h"
 
 class FunctionPrototypeArgumentStringAST : public FunctionPrototypeArgumentAST {
+    std::string name,
     unique_ptr<StringAST> value;
 
     public:
         FunctionPrototypeArgumentStringAST(
+            std::string name,
             unqiue_ptr<StringAST> value;
-        ) : value(std::move(value)) {}
+        ) : name(name), value(std::move(value)) {}
         Value *codegen() {}
 }
 

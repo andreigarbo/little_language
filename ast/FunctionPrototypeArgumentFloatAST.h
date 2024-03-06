@@ -6,12 +6,14 @@
 #include "FloatAST.h"
 
 class FunctionPrototypeArgumentFloatAST : public FunctionPrototypeArgumentAST {
+    std::string name,
     unique_ptr<FloatAST> value;
 
     public:
         FunctionPrototypeArgumentFloatAST(
+            std::string name,
             unqiue_ptr<FloatAST> value;
-        ) : value(std::move(value)) {}
+        ) : name(name), value(std::move(value)) {}
         Value *codegen() {}
 }
 
