@@ -252,7 +252,7 @@ static std::unique_ptr<GenericAST> ParseFunctionPrototypeArgumentExpr() {
                 auto argument = std::make_unique<FunctionPrototypeArgumentStringAST>(argumentName, nullptr);
                 return argument;
                 break;
-            case "default":
+            case default:
                 return LogError("Unexpected argument type for argument " + argumentName);
                 break;
         }
@@ -260,8 +260,44 @@ static std::unique_ptr<GenericAST> ParseFunctionPrototypeArgumentExpr() {
 }
 
 static std::unique_ptr<GenericAST> ParseFunctionCallExpr() {
-    
+    auto functionName = ParseStringExpr();
+    if (current_token == '('){
+        get_next_token();
+        std::vector<GenericAST> functionArgs;
+        auto functionArg = ParseFunctionArgumentExpr();
+        functionArgs.push_back(functionArg);
+        while (current_token == ','){
+            get_next_token();
+            auto functionArg = ParseFunctionArgumentExpr();
+            functionArgs.push_back(functionArg);      
+        }
+        if (current_token == ')') {
+            get_next_token();
+            return FunctionCallAST(functionName, functionArgs);
+        } else {return LogError("Expected ')' at the end of arguments");}
+    } else {return LogError("Expected '(' after function name");}
 }
+
+static std::unique_ptr<GenericAST> ParseFunctionArgumentExpr(){
+    switch (current_token) {
+        case token_int_number:
+            auto value = ParseIntExpr();
+            return value;
+            break;
+        case token_float_number:
+            auto value = ParseFloatExpr();
+            return value;
+            break;
+        case token_identifier:
+            auto value = ParseStringExpr();
+            return value;
+            break;
+        case default:
+            return LogError("Unexepected type for function argument");
+    }
+}
+
+
 
 //-----Function definition parsing end
 
