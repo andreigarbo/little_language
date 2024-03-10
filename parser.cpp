@@ -201,6 +201,15 @@ static std::unique_ptr<GenericAST> ForStatementAST() {
                     get_next_token();
                     //fill code to parse body of expression
                     //then return ForIteratorAST (needs to be created as a header file as well)
+                    if (current_token == '{') {
+                        get_next_token();
+                        auto body = ParseStatementsExpr();
+                        if (current_token == '}') {
+                            get_next_token();
+                            unqiue_ptr<GenericAST> forIteratorAST;
+                            forIteratorAST = ForInAST(firstArgumentIterator, iterableName, body);
+                        } else {return LogError("Expected '}' at end of instruction block");}
+                    } else {return LogError("Expected '{' at start of instruction block");}
                 } else {return LogError("Expected ')' in end of iterator block");}
             } 
             else if (current_token == token_to) {
@@ -217,6 +226,15 @@ static std::unique_ptr<GenericAST> ForStatementAST() {
                                 get_next_token();
                                 //fill code to parse body of expression
                                 //then return ForRangeAST (needs to be created as a header file as well)
+                                if (current_token == '{') {
+                                    get_next_token();
+                                    auto body = ParseStatementsExpr();
+                                    if (current_token == '}') {
+                                        get_next_token();
+                                        unique_ptr<GenericAST> forRangeAST;
+                                        forRangeAST = ForAST(firstArgumentIterator, secondArgumentIterator, iteratorIncrement, body);
+                                    }
+                                } else {return LogError("Expected '{' at start of instruction block");}
                             } else {return LogError("Expected ')' in end of iterator block");}
                         } else {return LogError("Expected '=' after keyword 'iterate'");}
                     } else {return LogError("Expected argument 'iterate'");}
@@ -231,9 +249,34 @@ static std::unique_ptr<GenericAST> ForStatementAST() {
     } else {return LogError("Expected 'for' in beginning of for loop");}
 }
 
+static std::unqiue_ptr<GenericAST> DoWhileStatementAST(){
+    if(current_token == token_do) {
+        get_next_token();
+        if (current_token == '{') {
+            get_next_token();
+            auto body = ParseStatementsExpr();
+            if (current_token == '}') {
+                get_next_token();
+                if (current_token == token_while) {
+                    get_next_token();
+                    if (current_token == '('){
+                        get_next_token();
+                        auto condition = ParseConditionExpr();
+                        if (current_token == ')') {
+                            get_next_token();
+                            unqiue_ptr<GenericAST> doWhileStatement;
+                            doWhileStatement = DoWhileStatementAST(body, condition);
+                            return doWhileStatement;
+                        } else {return LogError("Expected ')' at end of condition");}
+                    } else {return LogError("Expected '(' after 'while'");}
+                } else {return LogError("Expected 'while' at end of instruction block");}
+            } else {return LogError("Expected '}' in end of instruction block");}
+        } else {return LogError("Expected '{' in beginning of instruction block");}
+    }
+}
 
 
-//-----Consitional statement parsing end
+//-----Conditional statement parsing end
 
 
 //-----Function definition parsing start

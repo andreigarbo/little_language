@@ -4,13 +4,15 @@
 #include <GenericAST.h>
 
 class ForAST : public GenericAST {
-    unique_ptr<GenericAST> condition, body;
+    unique_ptr<GenericAST> intervalStart, intervalEnd, iterator, body;
 
     public:
         ForAST(
-            unique_ptr<GenericAST> condition,
+            unique_ptr<GenericAST> intervalStart,
+            unique_ptr<GenericAST> intervalEnd,
+            unqiue_ptr<GenericAST> iterator,
             unique_ptr<GenericAST> body
-        ) : condition(std::move(condition)) {}
+        ) : intervalStart(std::move(intervalStart)), intervalEnd(std::move(intervalEnd)), iterator(std::move(iterator)), body(std::move(body)) {}
         Value *codegen() {}
 }
 
