@@ -25,11 +25,13 @@ enum Token{
     token_do = -12,
     token_for = -13,
     token_in = -14,
+    token_to = -15,
+    token_iterate = -16,
 
     //strings or numbers
-    token_identifier = -15,
-    token_int_number = -16
-    token_float_number = -17
+    token_identifier = -17,
+    token_int_number = -18,
+    token_float_number = -19
 };
 
 #endif

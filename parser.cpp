@@ -165,6 +165,74 @@ static std::unique_ptr<GenericAST> IfStatementExpr() {
     } else {return LogError("Expected 'if' in beginning of conditional statement");}
 }
 
+static std::unqiue_ptr<GenericAST> WhileStatementAST(){
+    if (current_token == token_while){
+        get_next_token();
+        if (current_token == '('){
+            get_next_token();
+            auto condition = ParseConditionExpr();
+            if (current_token == ')') {
+                get_next_token();
+                if (current_token == '{') {
+                    get_next_token();
+                    auto body = ParseStatementsExpr();
+                    if (current_token == '}') {
+                        get_next_token();
+                        unique_ptr<GenericAST> whileStatement;
+                        whileStatement = WhileAST(condition, body);
+                        return whileStatement;
+                    } else {return LogError("Expected '}' in end of instruction block");}
+                } else {return LogError("Expected '{' in beginning of instruction block");}
+            } else {return LogError("Expected ')' in end of condition block");}
+        } else {return LogError("Expected '(' in beginning of condition block");}
+    } else {return LogError("Expected 'while' in beginning of while loop");}
+}
+
+static std::unique_ptr<GenericAST> ForStatementAST() {
+    if (current_token == token_for){
+        get_next_token();
+        if (current_token == '(') {
+            get_next_token();
+            auto firstArgumentIterator = ParseStringExpr();
+            if (current_token == token_in) {
+                get_next_token();
+                auto iterableName = ParseStringExpr();
+                if(current_token == ')') {
+                    get_next_token();
+                    //fill code to parse body of expression
+                    //then return ForIteratorAST (needs to be created as a header file as well)
+                } else {return LogError("Expected ')' in end of iterator block");}
+            } 
+            else if (current_token == token_to) {
+                get_next_token();
+                auto secondArgumentIterator = ParseStringExpr();
+                if (current_token == ',') {
+                    get_next_token();
+                    if (current_token == token_iterate) {
+                        get_next_token();
+                        if (current_token == '=') {
+                            get_next_token();
+                            auto iteratorIncrement = ParseIntExpr();
+                            if(current_token == ')') {
+                                get_next_token();
+                                //fill code to parse body of expression
+                                //then return ForRangeAST (needs to be created as a header file as well)
+                            } else {return LogError("Expected ')' in end of iterator block");}
+                        } else {return LogError("Expected '=' after keyword 'iterate'");}
+                    } else {return LogError("Expected argument 'iterate'");}
+                } else {
+                    if(current_token == ')') {
+                        get_next_token();
+                    } else {return LogError("Expected ')' in end of iterator block");}
+                }
+            }
+            else {return LogError("Expected keyword 'in' or 'to' after first argument in iterator block");}
+        } else {return LogError("Expected '(' in beginning of iterator block");}
+    } else {return LogError("Expected 'for' in beginning of for loop");}
+}
+
+
+
 //-----Consitional statement parsing end
 
 
@@ -296,8 +364,6 @@ static std::unique_ptr<GenericAST> ParseFunctionArgumentExpr(){
             return LogError("Unexepected type for function argument");
     }
 }
-
-
 
 //-----Function definition parsing end
 
