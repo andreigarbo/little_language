@@ -52,8 +52,22 @@ static std::unique_ptr<GenericAST> ParseBinaryExpr(){
     //TODO
 }
 
-static std::unique_ptr<GenericAST> ParseFunctionCallExpr(){
-    //auto callee = std::make_unique<>
+static std::unique_ptr<GenericAST> ParseVariableAssignExpr(){
+    if (current_token == token_identifier){
+        auto variable = std::make_unique<StringAST>(identifier_string);
+        if (current_token == '=') {
+            get_next_token();
+            if(current_token == token_identifier){
+                auto assigned_value = std::make_unique<StringAST>(identifier_string);
+            } else if (current_token == token_int_number){
+                auto assigned_value = std::make_unique<IntAST>(numeric_value_int);
+            } else if (current_token == token_float_number) {
+                auto assigned_value = std::make_unique<FloatAST>(numeric_value_float);
+            } else {return LogError("Expected right value of assignment to be string, float or int")}
+            auto variableAssignAST = make_unique<VariableAssignAST>(variable, assigned_value);
+            return variableAssignAST;
+        }
+    } else {return LogError("Expected string as variable name");}
 }
 
 static std::unique_ptr<GenericAST> ParseVariableNameExpr(){
@@ -66,6 +80,7 @@ static std::unique_ptr<GenericAST> ParseVariableNameExpr(){
 //this parses an addition/subtraction expression
 //creates an AST data structure with children for each side of the operation
 //made up of two MDE with an operator between them
+
 static std::unique_ptr<GenericAST> ParseAddSubExpr(){
     unqiue_ptr<GenericAST> TermAddSub1 = ParseMulDivExpr();
     if (current_token == '+' || current_token == '-'){
@@ -83,6 +98,7 @@ static std::unique_ptr<GenericAST> ParseAddSubExpr(){
 //this parses an addition/subtraction expression
 //creates an AST data structure with children for each side of the operation
 //made up of two terminals with an operator between them
+
 static std::unique_ptr<GenericAST> ParseMulDivExpr(){
     unique_ptr<GenericAST> TermMulDiv1 = ParseTermExpr();
     if (current_token == '/' || current_token == '%' || current_token == '*'){
@@ -165,7 +181,7 @@ static std::unique_ptr<GenericAST> IfStatementExpr() {
     } else {return LogError("Expected 'if' in beginning of conditional statement");}
 }
 
-static std::unqiue_ptr<GenericAST> WhileStatementAST(){
+static std::unqiue_ptr<GenericAST> WhileStatementExpr(){
     if (current_token == token_while){
         get_next_token();
         if (current_token == '('){
@@ -188,7 +204,7 @@ static std::unqiue_ptr<GenericAST> WhileStatementAST(){
     } else {return LogError("Expected 'while' in beginning of while loop");}
 }
 
-static std::unique_ptr<GenericAST> ForStatementAST() {
+static std::unique_ptr<GenericAST> ForStatementExpr() {
     if (current_token == token_for){
         get_next_token();
         if (current_token == '(') {
@@ -274,6 +290,8 @@ static std::unqiue_ptr<GenericAST> DoWhileStatementAST(){
         } else {return LogError("Expected '{' in beginning of instruction block");}
     }
 }
+
+
 
 
 //-----Conditional statement parsing end
