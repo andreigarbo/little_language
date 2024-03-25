@@ -1,2 +1,4 @@
 llvm/
 ninja/
+lexer
+parser

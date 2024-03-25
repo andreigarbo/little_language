@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "headers/parser_headers.h"
-#include "headers/shared_memory.h"
+#include "headers/lexer_parser_commons.h"
 #include "utils.h"
 
 static int current_token;
@@ -29,27 +29,71 @@ static std::unique_ptr<FunctionPrototypeAST> LogErrorPrototype(const char *strin
 //-----Start of int, float, string parsers
 
 static std::unique_ptr<GenericAST> ParseIntExpr(){
-    auto value = std::make_unique<IntAST>(numeric_value_int);
-    get_next_token();
-    return std::move(value);
+    if (current_token == token_int_number){
+        auto value = std::make_unique<IntAST>(numeric_value_int);
+        get_next_token();
+        return std::move(value);
+    } else {return LogError("Expected integer value");}
 }
 
 static std::unique_ptr<GenericAST> ParseFloatExpr(){
-    auto value = std::make_unique<FloatAST>(numeric_value_float);
-    get_next_token();
-    return std::move(value);
+    if (current_token == token_float_number) {
+        auto value = std::make_unique<FloatAST>(numeric_value_float);
+        get_next_token();
+        return std::move(value);
+    } else {return LogError("Expected floating point value");}
 }
 
-static std::unique_ptr<GenericAST> ParseStringExpr(){
-    auto value = std::make_unique<StringAST>(identifier_string);
-    get_next_token();
-    return std::move(value);
+static std::unique_ptr<GenericAST> ParseStringOrCharExpr(){
+    if (current_token == token_identifier && identifier_string.length == 1){
+        auto value = std::make_unique<CharAST>(c_str(identifier_string)[0]);
+        get_next_token();
+        return std::move(value);
+    }
+    else if (current_token == token_identifier && identifier_string.length > 1){
+        auto value = std::make_unique<StringAST>(identifier_string);
+        get_next_token();
+        return std::move(value);
+    } else {return LogError("Expected char or string value");}
 }
 
 //------End of int, float, string parsers
 
+// +, -, /, %, *
 static std::unique_ptr<GenericAST> ParseBinaryExpr(){
-    //TODO
+        if (current_token == token_identifier) {
+            auto left_variable_name = ParseStringOrCharExpr();
+            if (isOperator(current_token)) {
+                char operator = current_token;
+                get_next_token();
+                if (current_token == token_identifier) {// || current_token == token_int_number || current_token == token_float_number) {
+                    auto right_variable_name = ParseStringOrCharExpr();
+                    auto binary_expression = std::unique_ptr<BinaryExprAST>(left_variable_name, operator, right_variable_name);
+                    return binary_expression;
+                } else if (current_token == token_int_number) {
+                    auto right_variable_int = ParseIntExpr();
+                    auto binary_expression = std::unique_ptr<BinaryExprAST>(left_variable_name, operator, right_variable_int);
+                    return binary_expression;
+                } else if (current_token == token_float_number) {
+                    auto right_variable_float = ParseFloatExpr();
+                    auto binary_expression = std::unique_ptr<BinaryExprAST>(left_variable_name, operator, right_variable_float);
+                    return binary_expression;
+                } else {return LogError("Expected right term of binary expression to be variable name, int or float");}
+            } else {return LogError("Expected operator after left term of binary expression");}
+        } else if (current_token == token_int_number) {
+            auto left_term = ParseIntExpr();
+            if (isOperator(current_token)) {
+                char operator = current_token;
+                get_next_token();
+                if (current_token == token_int_number){
+                    
+                }
+            } else {return LogError("Expected operator after left term of binary expression");}
+
+
+        } else if (current_token == token_float_number) {
+
+        } else {return LogError("Expected left term of binary expression to be variable name, int or float");}
 }
 
 static std::unique_ptr<GenericAST> ParseVariableAssignExpr(){
@@ -290,9 +334,6 @@ static std::unqiue_ptr<GenericAST> DoWhileStatementAST(){
         } else {return LogError("Expected '{' in beginning of instruction block");}
     }
 }
-
-
-
 
 //-----Conditional statement parsing end
 

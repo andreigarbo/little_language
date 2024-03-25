@@ -9,7 +9,9 @@ class CharAST : public GenericAST {
 
     public:
         CharAST(char value) : value(value) {}
-        Value *codegen() {return nullptr;}
+        Value *codegen() {
+            return ConstantInt::get(*TheContext, APInt(8, value));
+        }
 };
 
 #endif

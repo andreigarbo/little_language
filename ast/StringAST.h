@@ -9,7 +9,9 @@ class StringAST : public GenericAST {
 
     public:
         StringAST(std::string& value) : value(std::move(value)) {}
-        Value *codegen() {return nullptr;}
+        Value *codegen() {
+            return ConstantDataArray::getString(*TheContext, value); 
+        }
 };
 
 #endif

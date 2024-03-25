@@ -1,5 +1,5 @@
-#ifndef SHARED_MEMORY_H
-#define SHARED_MEMORY_H
+#ifndef LEXER_PARSER_COMMONS_H
+#define LEXER_PARSER_COMMONS_H
 
 static double numeric_value_float;
 static int numeric_value_int;

@@ -6,11 +6,9 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <iostream>
 
-#include "headers/shared_memory.h"
-
-static std::string identifier_string; // Filled in if tok_identifier
-static double numeric_value;
+#include "headers/lexer_parser_commons.h"
 
 //function for getting tokens from the input
 static int get_token(){
@@ -73,7 +71,9 @@ static int get_token(){
         else if(identifier_string == "in"){
             return token_in;
         }
-
+        else if(identifier_string == "to"){
+            return token_to;
+        }
         //if not a specially defined keyword, return token_identifier to signal a custom word (such as a variable name)
         
         return token_identifier; 
@@ -109,17 +109,17 @@ static int get_token(){
         //strtod takes 2 arguments, first the value to be converted to a floating point number
         //and then a pointer where it can store any characters that are not numeric (nullptr should discard any non numeric characters)
         //string.c_str() converts a string to a null terminated character array
-        if !has_read_decimal_point{
+        if (!has_read_decimal_point){
             numeric_value_int = strtol(read_number.c_str(), nullptr, 10);
             return token_int_number;
         } else {
-            numeric_value_float = strtod(read_number.c_str(), nullptr)
+            numeric_value_float = strtod(read_number.c_str(), nullptr);
             return token_float_number;
         }
     }
     //single line comments start with #
     //multi line comments start and end with ##
-    else if (last_char == "#"){
+    else if (last_char == '#'){
         last_char = getchar();
         //multi line comment
         if(last_char == '#'){
@@ -163,5 +163,5 @@ static int get_token(){
 
         return character_to_return;
     }
+    return -1;
 }
-

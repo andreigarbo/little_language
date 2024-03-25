@@ -12,4 +12,11 @@ bool isTypeDeclaration(int token){
     return false;
 }
 
+bool isOperator(int token){
+    if (token == '%' || token == '/' || token == '+' || token == '-' || token == '*'){
+        return true;
+    }
+    return false;
+}
+
 #endif
