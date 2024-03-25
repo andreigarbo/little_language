@@ -59,43 +59,6 @@ static std::unique_ptr<GenericAST> ParseStringOrCharExpr(){
 
 //------End of int, float, string parsers
 
-// +, -, /, %, *
-static std::unique_ptr<GenericAST> ParseBinaryExpr(){
-        if (current_token == token_identifier) {
-            auto left_variable_name = ParseStringOrCharExpr();
-            if (isOperator(current_token)) {
-                char operator = current_token;
-                get_next_token();
-                if (current_token == token_identifier) {// || current_token == token_int_number || current_token == token_float_number) {
-                    auto right_variable_name = ParseStringOrCharExpr();
-                    auto binary_expression = std::unique_ptr<BinaryExprAST>(left_variable_name, operator, right_variable_name);
-                    return binary_expression;
-                } else if (current_token == token_int_number) {
-                    auto right_variable_int = ParseIntExpr();
-                    auto binary_expression = std::unique_ptr<BinaryExprAST>(left_variable_name, operator, right_variable_int);
-                    return binary_expression;
-                } else if (current_token == token_float_number) {
-                    auto right_variable_float = ParseFloatExpr();
-                    auto binary_expression = std::unique_ptr<BinaryExprAST>(left_variable_name, operator, right_variable_float);
-                    return binary_expression;
-                } else {return LogError("Expected right term of binary expression to be variable name, int or float");}
-            } else {return LogError("Expected operator after left term of binary expression");}
-        } else if (current_token == token_int_number) {
-            auto left_term = ParseIntExpr();
-            if (isOperator(current_token)) {
-                char operator = current_token;
-                get_next_token();
-                if (current_token == token_int_number){
-                    
-                }
-            } else {return LogError("Expected operator after left term of binary expression");}
-
-
-        } else if (current_token == token_float_number) {
-
-        } else {return LogError("Expected left term of binary expression to be variable name, int or float");}
-}
-
 static std::unique_ptr<GenericAST> ParseVariableAssignExpr(){
     if (current_token == token_identifier){
         auto variable = std::make_unique<StringAST>(identifier_string);
@@ -120,18 +83,17 @@ static std::unique_ptr<GenericAST> ParseVariableNameExpr(){
 
 //-----Binary expression parsing start
 
-
 //this parses an addition/subtraction expression
 //creates an AST data structure with children for each side of the operation
 //made up of two MDE with an operator between them
 
 static std::unique_ptr<GenericAST> ParseAddSubExpr(){
-    unqiue_ptr<GenericAST> TermAddSub1 = ParseMulDivExpr();
+    std::unique_ptr<GenericAST> TermAddSub1 = ParseMulDivExpr();
     if (current_token == '+' || current_token == '-'){
         char operator = current_token;
         get_next_token();
         unqiue_ptr<GenericAST> TermAddSub2 = ParseMulDivExpr();
-        TermAddSub1 = BinaryExprAST(operator, move(TermAddSub1), move(TermAddSub2));
+        TermAddSub1 = make_unique<BinaryExprAST>(operator, move(TermAddSub1), move(TermAddSub2));
         return TermAddSub1;
     }
     else {
@@ -144,12 +106,12 @@ static std::unique_ptr<GenericAST> ParseAddSubExpr(){
 //made up of two terminals with an operator between them
 
 static std::unique_ptr<GenericAST> ParseMulDivExpr(){
-    unique_ptr<GenericAST> TermMulDiv1 = ParseTermExpr();
+    std::unique_ptr<GenericAST> TermMulDiv1 = ParseTermExpr();
     if (current_token == '/' || current_token == '%' || current_token == '*'){
         char operator = current_token;
         get_next_token();
         unique_ptr<GenericAST> TermMulDiv2 = ParseTermExpr();
-        TermMulDiv1 = BinaryExprAST(operator, move(TermMulDiv1), move(TermMulDiv2));
+        TermMulDiv1 = make_unique<BinaryExprAST>(operator, move(TermMulDiv1), move(TermMulDiv2));
         return TermMulDiv1;
     }
     else{
@@ -162,7 +124,7 @@ static std::unique_ptr<GenericAST> ParseMulDivExpr(){
 static std::unique_ptr<GenericAST> ParseTermExpr(){
     if (current_token == '('){
         get_next_token();
-        unique_ptr<GenericAST> AddSubExpr = ParseAddSubExpr();
+        std::unique_ptr<GenericAST> AddSubExpr = ParseAddSubExpr();
         if (current_token == ')'){
             next_symbol();
             return AddSubExpr;
@@ -172,11 +134,11 @@ static std::unique_ptr<GenericAST> ParseTermExpr(){
         }
     }
     else if (current_token == token_float_number){
-        unique_ptr<GenericAST> FloatNumber = ParseFloatExpr();
+        std::unique_ptr<GenericAST> FloatNumber = ParseFloatExpr();
         return FloatNumber;
     }
     else if (current_token == token_int_number){
-        unique_ptr<GenericAST> IntNumber = ParseIntExpr();
+        std::unique_ptr<GenericAST> IntNumber = ParseIntExpr();
         return IntNumber;
     }
     else {
