@@ -1,19 +1,19 @@
 #ifndef FOR_AST
 #define FOR_AST
 
-#include <GenericAST.h>
+#include "../headers/llvm_commons.h"
 
 class ForAST : public GenericAST {
-    unique_ptr<GenericAST> intervalStart, intervalEnd, iterator, body;
+    std::unique_ptr<GenericAST> intervalStart, intervalEnd, iterator, body;
 
     public:
         ForAST(
-            unique_ptr<GenericAST> intervalStart,
-            unique_ptr<GenericAST> intervalEnd,
-            unqiue_ptr<GenericAST> iterator,
-            unique_ptr<GenericAST> body
+            std::unique_ptr<GenericAST> intervalStart,
+            std::unique_ptr<GenericAST> intervalEnd,
+            std::unique_ptr<GenericAST> iterator,
+            std::unique_ptr<GenericAST> body
         ) : intervalStart(std::move(intervalStart)), intervalEnd(std::move(intervalEnd)), iterator(std::move(iterator)), body(std::move(body)) {}
-        Value *codegen() {}
-}
+        llvm::Value *codegen() {}
+};
 
 #endif

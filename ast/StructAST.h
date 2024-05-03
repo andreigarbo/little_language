@@ -1,15 +1,15 @@
 #ifndef STRUCT_AST
 #define STRUCT_AST
 
-#include <GenericAST.h>
 #include <string>
 #include <vector>
 #include <any>
+#include "../headers/llvm_commons.h"
 
 struct StructField{
     std::string name;
     std::any value;
-}
+};
 
 class StructAST : public GenericAST {
     std::string name;
@@ -17,5 +17,7 @@ class StructAST : public GenericAST {
 
     public:
         StructAST(const std::string& name, const std::vector<StructField> value) : name(std::move(name)), value(std::move(value)) {}
-        Value *codegen() {return nullptr;}
+        llvm::Value *codegen() {return nullptr;}
 };
+
+#endif

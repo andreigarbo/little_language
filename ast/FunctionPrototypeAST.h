@@ -1,20 +1,21 @@
 #ifndef PROTOTYPE_AST
 #define PROTOTYPE_AST
 
-#include <GenericAST.h>
+#include "../headers/llvm_commons.h"
 
 class FunctionPrototypeAST : public GenericAST {
     std::string returnType;
     std::string name;
-    std::vector<GenericAST> args;
+    std::vector<std::unique_ptr<GenericAST>> arguments;
+
 
     public:
-        PrototypeAST(
+        FunctionPrototypeAST(
             std::string returnType,
             std::string name,
-            std::vector<GenericAST> args;
-        ) : returnType(returnType), name(name), args(std::move(args)) {}
-        Value *codegen() {}
-}
+            std::vector<std::unique_ptr<GenericAST>> arguments
+        ) : returnType(returnType), name(name), arguments(std::move(arguments)) {}
+        llvm::Value *codegen() {}
+};
 
 #endif

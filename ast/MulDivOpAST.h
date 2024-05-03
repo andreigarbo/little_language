@@ -1,15 +1,15 @@
-#ifndef ADD_SUB_OP_AST
-#define ADD_SUB_OP_AST
+#ifndef MUL_DIV_OP_AST
+#define MUL_DIV_OP_AST
 
 #include "../headers/llvm_commons.h"
 
-class AddSubOpAST : public GenericAST {
+class MulDivOpAST : public GenericAST {
     std::unique_ptr<GenericAST> left;
     char op;
     std::unique_ptr<GenericAST> right;
 
     public:
-        AddSubOpAST(
+        MulDivOpAST(
             std::unique_ptr<GenericAST> left,
             char op,
             std::unique_ptr<GenericAST> right

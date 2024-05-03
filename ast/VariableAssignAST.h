@@ -1,18 +1,17 @@
 #ifndef VARIABLE_ASSIGN_AST
 #define VARIABLE_ASSIGN_AST
 
-#include <GenericAST.h>
-
+#include "../headers/llvm_commons.h"
 
 class VariableAssignAST : public GenericAST {
-    unique_ptr<GenericAST> left, right;
+    std::unique_ptr<GenericAST> left, right;
 
     public:
         VariableAssignAST(
-            unique_ptr<GenericAST> left,
-            unique_ptr<GenericAST> right
-        ) : left(std::move(left)), right(std::move(right))
-        Value* codegen() {}
-}
+            std::unique_ptr<GenericAST> left,
+            std::unique_ptr<GenericAST> right
+        ) : left(std::move(left)), right(std::move(right)) {}
+        llvm::Value* codegen() {}
+};
 
 #endif

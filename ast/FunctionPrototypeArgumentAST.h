@@ -1,18 +1,18 @@
 #ifndef FUNCTION_PROTOTYPE_ARGUMENT_AST_H
 #define FUNCTION_PROTOTYPE_ARGUMENT_AST_H
 
-#include "GenericAST.h"
+#include "../headers/llvm_commons.h"
 
 class FunctionPrototypeArgumentAST : public GenericAST {
     std::string name;
-    unique_ptr<GenericAST> value;
+    std::unique_ptr<GenericAST> value;
 
     public:
         FunctionPrototypeArgumentAST( 
             std::string name,
-            unique_ptr<GenericAST> value;
-        ) : name(name), value(std::move(value)) {}
-        Value *codegen() {}
-}
+            std::unique_ptr<GenericAST> value
+        ) :  name(std::move(name)), value(std::move(value)) {}
+        llvm::Value *codegen() {}
+};
 
 #endif

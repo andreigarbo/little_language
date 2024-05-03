@@ -1,17 +1,17 @@
 #ifndef WHILE_AST
 #define WHILE_AST
 
-#include <GenericAST.h>
+#include "../headers/llvm_commons.h"
 
 class WhileAST : public GenericAST {
-    unique_ptr<GenericAST> condition, body;
+    std::unique_ptr<GenericAST> condition, body;
 
     public:
         WhileAST(
-            unique_ptr<GenericAST> condition,
-            unique_ptr<GenericAST> body
+            std::unique_ptr<GenericAST> condition,
+            std::unique_ptr<GenericAST> body
         ) : condition(std::move(condition)), body(std::move(body)) {}
-        Value *codegen() {}
-}
+        llvm::Value *codegen() {}
+};
 
 #endif

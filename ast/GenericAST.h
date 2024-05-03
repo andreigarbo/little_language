@@ -1,12 +1,14 @@
 #ifndef GENERIC_AST
 #define GENERIC_AST
 
-#include "llvm/IR/Value.h"
+#include "../headers/llvm_commons.h"
 
 class GenericAST {
     public:
         virtual ~GenericAST() = default;
-        virtual Value *codegen();
+        virtual llvm::Value *codegen(){
+            return nullptr;
+        }
 };
 
 #endif

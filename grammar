@@ -1,0 +1,17 @@
+
+
+VARIABLE_TYPE ::= 'int' | 'float' | 'char' | 'string' | 'array' | 'file'
+VARIABLE_NAME ::= (a-zA-Z_)+
+OPERATOR_E_AS ::= '+' | '-' 
+OPERATOR_E_MDR ::= '%' | '/' | '*'
+
+E_IF ::= if '(' CONDITION ')' '{' FUNCTION_BODY '}' (else '{' FUNCTION_BODY '}' ) ?
+E_WHILE ::= while '(' CONDITION ')' '{' FUNCTION_BODY '}'
+E_DO_WHILE ::= do '{' FUNCTION_BODY '}' while '(' CONDITION ')'
+E_FOR ::= E_FOR_TO | E_FOR_IN 
+E_FOR_TO ::= for '(' T to T (',' iterate = (0-9)+)? ')' '{' FUNCTION_BODY '}'
+E_FOR_IN ::= for '(' VARIABLE_NAME in VARIABLE_NAME ')' '{' FUNCTION_BODY '}'
+
+E_AS ::= E_MDR ( OPERATOR_E_AS E_MDR)*
+E_MDR ::= T ( OPERATOR_E_MDR T)*
+T ::= i | E_AS | VARIABLE_NAME

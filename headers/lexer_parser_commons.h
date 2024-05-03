@@ -1,9 +1,9 @@
 #ifndef LEXER_PARSER_COMMONS_H
 #define LEXER_PARSER_COMMONS_H
 
-static double numeric_value_float;
-static int numeric_value_int;
-static std::string identifier_string;
+//static double numeric_value_float;
+//static int numeric_value_int;
+//static std::string identifier_string;
 
 enum Token{
     //end of file
@@ -31,7 +31,13 @@ enum Token{
     //strings or numbers
     token_identifier = -17,
     token_int_number = -18,
-    token_float_number = -19
+    token_float_number = -19,
+
+    //operators
+    token_le = -20,
+    token_ge = -21,
+    token_eq = -22,
+    token_ne = -23
 };
 
 #endif

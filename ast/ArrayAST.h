@@ -1,8 +1,8 @@
 #ifndef ARRAY_AST
 #define ARRAY_AST
 
-#include <GenericAST.h>
 #include <vector>
+#include "../headers/llvm_commons.h"
 
 template <typename T>
 class ArrayAST : public GenericAST {
@@ -10,7 +10,7 @@ class ArrayAST : public GenericAST {
 
     public:
         ArrayAST(std::vector<T>& value) : value(std::move(value)) {}
-        Value *codegen() {return nullptr;}
+        llvm::Value *codegen() {return nullptr;}
 
 };
 

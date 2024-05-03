@@ -7,25 +7,29 @@
 #include <utility>
 #include <vector>
 #include <iostream>
+#include <fstream>
 
+#include "lexer.h"
 #include "headers/lexer_parser_commons.h"
 
-//function for getting tokens from the input
-static int get_token(){
-    //initialize char to whitespace
-    static int last_char = ' ';
+Lexer::Lexer() : last_char(' ') {}
 
+//function for getting tokens from the input
+int Lexer::get_token(){
     //skips any and all whitespace characters present before the token
     while(isspace(last_char)){
-        last_char = getchar();
+        last_char = file.get();
     }
+
+    std::cout << "Reading char: " << static_cast<char>(last_char) << " or " << last_char<< std::endl;
+
 
     //characters in range [a-zA-Z]*
     if (isalpha(last_char)){
         identifier_string = last_char;
 
         //while characters read are in the above mentioned range
-        while(isalpha(last_char = getchar())){
+        while(isalpha(last_char = file.get())){
 
             //build string from the read characters
             identifier_string += last_char;
@@ -93,16 +97,16 @@ static int get_token(){
             if(last_char == '.' && has_read_decimal_point == false){
                 has_read_decimal_point = true;
                 read_number += last_char;
-                last_char = getchar();
+                last_char = file.get();
             }
             //this skips any further decimal points, making 1.23.45 equal to 1.2345
             else if(last_char =='.' && has_read_decimal_point == true){
-                last_char = getchar();
+                last_char = file.get();
             }
             //this case is for numerical characters
             else{
                 read_number += last_char;
-                last_char = getchar();
+                last_char = file.get();
             }
         } while (isdigit(last_char) || last_char == '.');
 
@@ -120,15 +124,15 @@ static int get_token(){
     //single line comments start with #
     //multi line comments start and end with ##
     else if (last_char == '#'){
-        last_char = getchar();
+        last_char = file.get();
         //multi line comment
         if(last_char == '#'){
             do{
-                last_char = getchar();
+                last_char = file.get();
             } while(last_char != '#');
-            last_char = getchar();
+            last_char = file.get();
             if(last_char == '#'){ // correctly formatted multi line comment
-                last_char = getchar();
+                last_char = file.get();
                 if(last_char != EOF){
                     return get_token(); //skips the whole comment as a single token
                 }
@@ -141,7 +145,7 @@ static int get_token(){
         else{
             //not a do while since the first character after # was already read and is possibly a EOF, \n or \r
             while(last_char != EOF && last_char != '\n' && last_char != '\r'){
-                last_char = getchar();
+                last_char = file.get();
             }
             //maybe this needs to be changed due to using while instead of do while?
 
@@ -149,6 +153,25 @@ static int get_token(){
                 return get_token(); //again, skip whole line as a single token
             }
         }
+    }
+    else if (last_char == '<' || last_char == '>' || last_char == '=' || last_char == '!') {
+        int next_char = file.get();
+        if (next_char == '=') {
+            if (last_char == '<')
+                return token_le;
+            else if (last_char == '>')
+                return token_ge;
+            else if (last_char == '=')
+                return token_eq;
+            else if (last_char == '!')
+                return token_ne;
+        }    
+        else {
+            // If it's not a compound operator, we should handle the current last_char as an individual token
+            int temp = last_char;
+            last_char = next_char; // Prepare the next character for the next token read
+            return temp; // Return the original last_char as a token
+        }   
     }
     //not consuming the EOF
     else if (last_char == EOF){
@@ -159,9 +182,17 @@ static int get_token(){
         int character_to_return = last_char;
         
         //consume the character
-        last_char = getchar();
+        last_char = file.get();
 
         return character_to_return;
     }
     return -1;
+}
+
+int Lexer::get_next_token_from_input() {
+    return get_token();
+}
+
+void Lexer::setFilename(const std::string& filename){
+    file.open(filename);
 }

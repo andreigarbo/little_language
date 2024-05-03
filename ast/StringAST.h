@@ -2,15 +2,15 @@
 #define STRING_AST
 
 #include <string>
-#include <GenericAST.h>
+#include "../headers/llvm_commons.h"
 
 class StringAST : public GenericAST {
     std::string value;
 
     public:
         StringAST(std::string& value) : value(std::move(value)) {}
-        Value *codegen() {
-            return ConstantDataArray::getString(*TheContext, value); 
+        llvm::Value *codegen() {
+            return llvm::ConstantDataArray::getString(*TheContext, value); 
         }
 };
 
