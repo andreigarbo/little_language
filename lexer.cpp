@@ -21,16 +21,12 @@ int Lexer::get_token(){
         last_char = file.get();
     }
 
-    std::cout << "Reading char: " << static_cast<char>(last_char) << " or " << last_char<< std::endl;
-
-
     //characters in range [a-zA-Z]*
     if (isalpha(last_char)){
         identifier_string = last_char;
 
         //while characters read are in the above mentioned range
         while(isalpha(last_char = file.get())){
-
             //build string from the read characters
             identifier_string += last_char;
         }
@@ -78,8 +74,8 @@ int Lexer::get_token(){
         else if(identifier_string == "to"){
             return token_to;
         }
+
         //if not a specially defined keyword, return token_identifier to signal a custom word (such as a variable name)
-        
         return token_identifier; 
     }
 
@@ -156,22 +152,59 @@ int Lexer::get_token(){
     }
     else if (last_char == '<' || last_char == '>' || last_char == '=' || last_char == '!') {
         int next_char = file.get();
+        while(isspace(next_char)){
+            next_char = file.get();
+        }
         if (next_char == '=') {
-            if (last_char == '<')
+            if (last_char == '<'){
+                last_char = file.get();
                 return token_le;
-            else if (last_char == '>')
+            }
+            else if (last_char == '>'){
+                last_char = file.get();
                 return token_ge;
-            else if (last_char == '=')
+            }
+            else if (last_char == '='){
+                last_char = file.get();
                 return token_eq;
-            else if (last_char == '!')
+            }
+            else if (last_char == '!'){
+                last_char = file.get(); 
                 return token_ne;
+            }
         }    
         else {
-            // If it's not a compound operator, we should handle the current last_char as an individual token
-            int temp = last_char;
-            last_char = next_char; // Prepare the next character for the next token read
-            return temp; // Return the original last_char as a token
+            //if not a 2 char compound operator, meaning either '!' or '='
+            int character_to_return = last_char;
+            last_char = next_char;
+            return character_to_return;
         }   
+    }
+    else if (last_char == '\''){
+        last_char = file.get();
+        if (last_char == '\''){
+            identifier_string = "";
+            return token_identifier;
+        }
+        identifier_string = last_char;
+        last_char = file.get();
+        while (last_char != '\''){
+            identifier_string += last_char;
+            last_char = file.get();
+        }
+        last_char = file.get();
+        return token_identifier;
+    }
+    else if (last_char == '\"'){
+        last_char = file.get();
+        identifier_string = last_char;
+        last_char = file.get();
+        while (last_char != '\"'){
+            identifier_string += last_char;
+            last_char = file.get();
+        }
+        last_char = file.get();
+        return token_identifier;
     }
     //not consuming the EOF
     else if (last_char == EOF){
@@ -190,7 +223,10 @@ int Lexer::get_token(){
 }
 
 int Lexer::get_next_token_from_input() {
-    return get_token();
+    int ct;
+    ct = get_token();
+    return ct;
+   // return get_token();
 }
 
 void Lexer::setFilename(const std::string& filename){

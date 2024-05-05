@@ -12,6 +12,18 @@
 //compilation
 //g++ -I/usr/include/llvm-14 -I/usr/include/llvm-c-14 -o parser parser.cpp
 
+//TODO
+//2 types of lines outside functions
+//imports - standard libraries or external files
+//done using "import" -> 
+//    if word following import in quotes -> external file
+//    if word following import NOT in quotes -> standard library
+//
+//global variable delcaration 
+//keyword "global" begins line
+//after global, a basic DeclarationOrAssignment
+//TODO
+
 #include "headers/parser_headers.h"
 #include "headers/lexer_parser_commons.h"
 #include "headers/utils.h"
@@ -29,8 +41,6 @@ static void get_next_token(){
     numeric_value_float = lexer.numeric_value_float;
     numeric_value_int = lexer.numeric_value_int;
     identifier_string = lexer.identifier_string;
-    std::cout <<"Got token " << current_token << std::endl;
-    std::cout << "Identifier string: " << identifier_string << std::endl << std::endl;
 }
 
 //Error handling prototype functions start
@@ -79,6 +89,21 @@ static std::unique_ptr<IfAST> LogErrorPrototypeIf(const char *string){
     return nullptr;
 }
 
+static std::unique_ptr<WhileAST> LogErrorPrototypeWhile(const char *string){
+    LogError(string);
+    return nullptr;
+}
+
+static std::unique_ptr<DoWhileAST> LogErrorPrototypeDoWhile(const char *string){
+    LogError(string);
+    return nullptr;
+}
+
+static std::unique_ptr<ArrayAST> LogErrorPrototypeArray(const char *string){
+    LogError(string);
+    return nullptr;
+}
+
 //Error handling prototype functions end
 
 //function prototypes
@@ -88,6 +113,7 @@ static std::unique_ptr<IntAST> ParseIntExpr();
 static std::unique_ptr<FloatAST> ParseFloatExpr();
 static std::unique_ptr<StringAST> ParseStringExpr();
 static std::unique_ptr<CharAST> ParseCharExpr();
+static std::unique_ptr<ArrayAST> ParseArrayExpr();
 
 //artihmetic expressions
 static std::unique_ptr<GenericAST> ParseAddSubExpr();
@@ -132,7 +158,7 @@ static std::unique_ptr<FloatAST> ParseFloatExpr(){
 }
 
 static std::unique_ptr<StringAST> ParseStringExpr(){
-    if (current_token == token_identifier && identifier_string.length() > 1){
+    if (current_token == token_identifier && (identifier_string.length() > 1 || identifier_string.length() == 0)){
         auto value = std::make_unique<StringAST>(identifier_string);
         get_next_token();
         return value;
@@ -147,6 +173,28 @@ static std::unique_ptr<CharAST> ParseCharExpr(){
     } else {return LogErrorPrototypeChar("Expected char value");}
 }
 
+static std::unique_ptr<ArrayAST> ParseArrayExpr(){
+    if (current_token == '['){
+        get_next_token();
+        std::vector<std::unique_ptr<GenericAST>> arrayVector;
+        //if token not ], expecting at least one argument
+        if (current_token != ']') {
+            auto currentTerm = ParseTermExpr();
+            arrayVector.push_back(std::move(currentTerm));
+            while (current_token == ','){
+                get_next_token();
+                auto currentTerm = ParseTermExpr();
+                arrayVector.push_back(std::move(currentTerm));
+            }
+        }
+        if (current_token == ']'){
+            get_next_token();
+            auto array = std::make_unique<ArrayAST>(std::move(arrayVector));
+            return array;
+        } else {return LogErrorPrototypeArray("Expected array to end with ']'");}
+    } else {return LogErrorPrototypeArray("Expected array to start with '['");}
+}
+
 //------End of int, float, string parsers
 
 //-----Binary expression parsing start
@@ -155,7 +203,6 @@ static std::unique_ptr<CharAST> ParseCharExpr(){
 //can be parantheses enclosed
 
 static std::unique_ptr<GenericAST> ParseTermExpr(){
-    std::cout << "Current token in Term -> " << (char)current_token << std::endl;
     if (current_token == '('){
         get_next_token();
         std::unique_ptr<GenericAST> AddSubExpr = ParseAddSubExpr();
@@ -179,12 +226,16 @@ static std::unique_ptr<GenericAST> ParseTermExpr(){
         auto variableName = ParseCharExpr();
         return variableName;
     }
-    else if (current_token == token_identifier && identifier_string.length() > 1){
+    else if (current_token == token_identifier && (identifier_string.length() > 1 || identifier_string.length() == 0)){
         auto variableName = ParseStringExpr();
         return variableName;
     }
+    else if (current_token == '['){
+        auto array = ParseArrayExpr();
+        return array;
+    }
     else {
-        return LogErrorPrototype("Expected '(' or numeric symbol");
+        return LogErrorPrototype("Expected '(' or numeric symbol when parsing a term");
     }
 }
 
@@ -228,33 +279,58 @@ static std::unique_ptr<IfAST> ParseIfStatementExpr() {
             auto condition = ParseConditionExpr();
             if (current_token == ')') {
                 get_next_token();
-                if (current_token == '{'){
+                auto thenBody = ParseFunctionBodyExpr();
+                if (current_token == token_else) {
                     get_next_token();
-                    auto thenBody = ParseFunctionBodyExpr();
-                    if (current_token == '}') {
-                        get_next_token();
-                        if (current_token == token_else) {
-                            get_next_token();
-                            if (current_token == '{'){
-                                get_next_token();
-                                auto elseBody = ParseFunctionBodyExpr();
-                                if (current_token == '}') {
-                                    get_next_token();
-                                    std::unique_ptr<IfAST> ifStatement;
-                                    ifStatement = std::make_unique<IfAST>(std::move(condition), std::move(thenBody), std::move(elseBody));
-                                    return ifStatement;
-                                } else {return LogErrorPrototypeIf("Expected '}' in end of else block");}
-                            } else {return LogErrorPrototypeIf("Expected '{' in beginning of else block");}
-                        } else {
-                            std::unique_ptr<IfAST> ifStatement;
-                            ifStatement = std::make_unique<IfAST>(std::move(condition), std::move(thenBody));
-                            return ifStatement;
-                        }
-                    } else {return LogErrorPrototypeIf("Expected '}' in end of then block");}
-                } else {return LogErrorPrototypeIf("Expected '{' in beginning of then block");}
+                    auto elseBody = ParseFunctionBodyExpr();
+                    std::unique_ptr<IfAST> ifStatement;
+                    ifStatement = std::make_unique<IfAST>(std::move(condition), std::move(thenBody), std::move(elseBody));
+                    return ifStatement;
+                } else {
+                    std::unique_ptr<IfAST> ifStatement;
+                    ifStatement = std::make_unique<IfAST>(std::move(condition), std::move(thenBody));
+                    return ifStatement;
+                }
             } else {return LogErrorPrototypeIf("Expected ')' in end of condition block");}
         } else {return LogErrorPrototypeIf("Expected '(' in beginning of condition block");}
     } else {return LogErrorPrototypeIf("Expected 'if' in beginning of conditional statement");}
+}
+
+static std::unique_ptr<WhileAST> ParseWhileStatementExpr(){
+    if (current_token == token_while){
+        get_next_token();
+        if (current_token == '('){
+            get_next_token();
+            auto condition = ParseConditionExpr();
+            if (current_token == ')') {
+                get_next_token();
+                auto body = ParseFunctionBodyExpr();
+                std::unique_ptr<WhileAST> whileStatement;
+                whileStatement = std::make_unique<WhileAST>(std::move(condition), std::move(body));
+                return whileStatement;
+            } else {return LogErrorPrototypeWhile("Expected ')' in end of condition block");}
+        } else {return LogErrorPrototypeWhile("Expected '(' in beginning of condition block");}
+    } else {return LogErrorPrototypeWhile("Expected 'while' in beginning of while loop");}
+}
+
+static std::unique_ptr<DoWhileAST> ParseDoWhileStatementExpr(){
+    if(current_token == token_do) {
+        get_next_token();
+        auto body = ParseFunctionBodyExpr();
+        if (current_token == token_while) {
+            get_next_token();
+            if (current_token == '('){
+                get_next_token();
+                auto condition = ParseConditionExpr();
+                if (current_token == ')') {
+                    get_next_token();
+                    std::unique_ptr<DoWhileAST> doWhileStatement;
+                    doWhileStatement = std::make_unique<DoWhileAST>(std::move(condition), std::move(body));
+                    return doWhileStatement;
+                } else {return LogErrorPrototypeDoWhile("Expected ')' at end of condition");}
+            } else {return LogErrorPrototypeDoWhile("Expected '(' after 'while'");}
+        } else {return LogErrorPrototypeDoWhile("Expected 'while' at end of instruction block");}
+    }
 }
 
 static std::unique_ptr<GenericAST> ParseConditionExpr(){
@@ -319,7 +395,6 @@ static std::unique_ptr<GenericAST> ParseFunctionPrototypeArgumentExpr() {
     //first token is the type declaration
     if (isTypeDeclaration(current_token)){
         std::string argumentType = identifier_string;
-        std::cout << "Argument type -> " << argumentType <<std::endl;
         get_next_token();
         //second token is the name of the argument
         if (current_token == token_identifier){
@@ -387,42 +462,50 @@ static std::unique_ptr<FunctionPrototypeAST> ParseFunctionPrototypeExpr(){
             get_next_token();
             if (current_token == '('){
                 get_next_token();
+                std::vector<std::unique_ptr<GenericAST>> argumentList;
                 //parsing arguments one by one
                 if (isTypeDeclaration(current_token)){
-                    std::vector<std::unique_ptr<GenericAST>> argumentList;
                     auto argument = ParseFunctionPrototypeArgumentExpr();
                     argumentList.push_back(std::move(argument));
                     while (current_token == ','){
                         get_next_token();
                         auto argument = ParseFunctionPrototypeArgumentExpr();
                         argumentList.push_back(std::move(argument));
-                    }
-                    if (current_token == ')'){
-                        get_next_token();
-                        auto functionProtoype = std::make_unique<FunctionPrototypeAST>(functionType, functionName, std::move(argumentList));//generate Prototype AST and return
-                        return functionProtoype;
-                    } else {return LogErrorPrototypeFunctionPrototype("Expected ')' at end of function prototype");} // handles lack of ')' on prototype arg list end
-                } else {return LogErrorPrototypeFunctionPrototype("Expected argument type before name");}
-            } else {return LogErrorPrototypeFunctionPrototype("Expected '('");} //handles lack of '(' after function name
+                    } 
+                }
+                if (current_token == ')'){
+                    get_next_token();   
+                    auto functionProtoype = std::make_unique<FunctionPrototypeAST>(functionType, functionName, std::move(argumentList));//generate Prototype AST and return
+                    return functionProtoype;
+                } else {return LogErrorPrototypeFunctionPrototype("Expected ')' in end of function prototype");}
+            } else {return LogErrorPrototypeFunctionPrototype("Expected '(' in beginning of function prototype");} //handles lack of '(' after function name
         } else {return LogErrorPrototypeFunctionPrototype("Expected function type at beginning of declaration");} //handles no string at start of line
     } else {return LogErrorPrototypeFunctionPrototype("Expected function name to be string");}
 }
 
 static std::unique_ptr<GenericAST> ParseStatementExpr(){
     if (current_token == token_if){
+        std::cout << "Detected 'if'. Parsing if statement" << std::endl;
         return ParseIfStatementExpr();
     }
-    // else if (current_token == token_while){
-    //     return ParseWhileStatementExpr();
-    // }
-    // else if (current_token == token_do) {
-    //     return ParseDoWhileStatementExpr();
-    // }
+    else if (current_token == token_while){
+        std::cout << "Detected 'while'. Parsing while statement" << std::endl;
+        return ParseWhileStatementExpr();
+    }
+    else if (current_token == token_do) {
+        std::cout << "Detected 'do...while'. Parsing do...while statement" << std::endl;
+        return ParseDoWhileStatementExpr();
+    }
     // else if (current_token == token_for) {
     //     return ParseForStatementExpr();
     // }
-    else if (current_token == token_identifier){
-        return ParseDeclarationOrAssignmentExpr();
+    else if (current_token == token_identifier || isTypeDeclaration(current_token)){
+        std::cout << "Detected identifier or type declaration. Parsing declaration or assignment" << std::endl;
+        auto declarationOrAssignment = ParseDeclarationOrAssignmentExpr();
+        if (current_token == ';'){
+            get_next_token();
+            return declarationOrAssignment;
+        } else {return LogErrorPrototype("Expected ';' after statement");}
     }
 }
 
@@ -441,13 +524,9 @@ static std::vector<std::unique_ptr<GenericAST>> ParseFunctionBodyExpr(){
             std::unique_ptr<GenericAST> statement;
             statement = ParseStatementExpr();
             functionBody.push_back(std::move(statement));
-            if (current_token == ';') {
-                get_next_token();
-            } 
-            else if (current_token == token_eof){
+            if (current_token == token_eof){
                 return LogErrorPrototypeVector("Unexpected end of file while parsing function");
-            } 
-            else {return LogErrorPrototypeVector("Expected ';' after statement");}
+            }
         } while (current_token != '}');
         if (current_token == '}'){
             get_next_token();
@@ -459,17 +538,19 @@ static std::vector<std::unique_ptr<GenericAST>> ParseFunctionBodyExpr(){
 static void MainLoop(){
     while(true){
         get_next_token();
-        std::cout << "Entering the main loop with token -> " << current_token <<  std::endl;
         switch(current_token){
             case token_eof:
             {
                 std::cout << "EOF detected" << std::endl;
                 return;
             }
-            //case token_identifier:
             case token_int:
+            case token_float:
+            case token_char:
+            case token_string:
+            case token_array:
             {
-                std::cout << "Detected identifier. Parsing a function" << std::endl;
+                std::cout << "Detected type definition. Parsing a function" << std::endl;
                 auto function = ParseFunctionExpr();
                 break;
             }

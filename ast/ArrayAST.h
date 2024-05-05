@@ -4,12 +4,13 @@
 #include <vector>
 #include "../headers/llvm_commons.h"
 
-template <typename T>
 class ArrayAST : public GenericAST {
-    std::vector<T> value;
+    std::vector<std::unique_ptr<GenericAST>> value;
 
     public:
-        ArrayAST(std::vector<T>& value) : value(std::move(value)) {}
+        ArrayAST(
+            std::vector<std::unique_ptr<GenericAST>> value
+        ) : value(std::move(value)) {}
         llvm::Value *codegen() {return nullptr;}
 
 };

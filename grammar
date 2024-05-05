@@ -9,7 +9,7 @@ E_IF ::= if '(' CONDITION ')' '{' FUNCTION_BODY '}' (else '{' FUNCTION_BODY '}' 
 E_WHILE ::= while '(' CONDITION ')' '{' FUNCTION_BODY '}'
 E_DO_WHILE ::= do '{' FUNCTION_BODY '}' while '(' CONDITION ')'
 E_FOR ::= E_FOR_TO | E_FOR_IN 
-E_FOR_TO ::= for '(' T to T (',' iterate = (0-9)+)? ')' '{' FUNCTION_BODY '}'
+E_FOR_TO ::= for '(' VARIABLE_NAME from T to T (',' iterate = (0-9)+)? ')' '{' FUNCTION_BODY '}'
 E_FOR_IN ::= for '(' VARIABLE_NAME in VARIABLE_NAME ')' '{' FUNCTION_BODY '}'
 
 E_AS ::= E_MDR ( OPERATOR_E_AS E_MDR)*

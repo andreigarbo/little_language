@@ -2,3 +2,4 @@ llvm/
 ninja/
 lexer
 parser
+build
