@@ -11,7 +11,9 @@ class ArrayAST : public GenericAST {
         ArrayAST(
             std::vector<std::unique_ptr<GenericAST>> value
         ) : value(std::move(value)) {}
-        llvm::Value *codegen() {return nullptr;}
+        llvm::Value *codegen() {
+            
+        }
 
 };
 

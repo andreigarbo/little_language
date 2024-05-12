@@ -11,7 +11,7 @@ class FunctionAST : public GenericAST {
     public:
         FunctionAST(
             std::unique_ptr<FunctionPrototypeAST> prototype,
-            std::vector<std::unique_ptr<GenericAST>> body
+            std::vector<std::unique_ptr<GenericAST>> body = {}
         ) : prototype(std::move(prototype)), body(std::move(body)) {}
         llvm::Value* codegen() {}
 };

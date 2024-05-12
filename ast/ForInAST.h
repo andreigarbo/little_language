@@ -1,17 +1,19 @@
-#ifndef FOR_IN_AST
-#define FOR_IN_AST
+#ifndef FOR_IN_AST_H
+#define FOR_IN_AST_H
 
 #include "../headers/llvm_commons.h"
 
 class ForInAST : public GenericAST {
-    std::unique_ptr<GenericAST> term, iterable, body;
+    std::string variableName;
+    std::unique_ptr<GenericAST> iterable;
+    std::vector<std::unique_ptr<GenericAST>> body;
 
     public:
         ForInAST(
-            std::unique_ptr<GenericAST> term,
-            std::unique_ptr<GenericAST> iterable,
-            std::unique_ptr<GenericAST> body
-        ) : term(std::move(term)), iterable(std::move(iterable)), body(std::move(body)) {}
+            std::string variableName,
+            std::unique_ptr<GenericAST> iterableName,
+            std::vector<std::unique_ptr<GenericAST>> body
+        ) : variableName(std::move(variableName)), iterable(std::move(iterable)), body(std::move(body)) {}
         llvm::Value* codegen() {}
 };
 

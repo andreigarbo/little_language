@@ -26,7 +26,7 @@ int Lexer::get_token(){
         identifier_string = last_char;
 
         //while characters read are in the above mentioned range
-        while(isalpha(last_char = file.get())){
+        while(isalpha(last_char = file.get()) || last_char == '_'){
             //build string from the read characters
             identifier_string += last_char;
         }
@@ -71,8 +71,20 @@ int Lexer::get_token(){
         else if(identifier_string == "in"){
             return token_in;
         }
+        else if(identifier_string == "from"){
+            return token_from;
+        }
         else if(identifier_string == "to"){
             return token_to;
+        }
+        else if(identifier_string == "global"){
+            return token_global;
+        }
+        else if(identifier_string == "import"){
+            return token_import;
+        }
+        else if(identifier_string == "return"){
+            return token_return;
         }
 
         //if not a specially defined keyword, return token_identifier to signal a custom word (such as a variable name)

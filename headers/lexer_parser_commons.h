@@ -38,7 +38,12 @@ enum Token{
     token_le = -21,
     token_ge = -22,
     token_eq = -23,
-    token_ne = -24
+    token_ne = -24,
+
+    //misc
+    token_global = -25,
+    token_import = -26,
+    token_return = -27
 };
 
 #endif
