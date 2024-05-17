@@ -25,7 +25,7 @@ class MulDivOpAST : public GenericAST {
                 case '*':
                     return Builder->CreateFAdd(leftSide, rightSide, "addtmp");
                 case '/':
-                    return Builder->CreateFSub(leftSide, rightSide, "subtmp");bluetblu
+                    return Builder->CreateFSub(leftSide, rightSide, "subtmp");
             }
         }
 };
