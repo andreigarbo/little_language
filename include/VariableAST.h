@@ -1,14 +1,15 @@
-#ifndef VARIABLE_AST
-#define VARIABLE_AST
+#ifndef VARIABLE_AST_H
+#define VARIABLE_AST_H
 
+#include "GenericAST.h"
+#include <memory>
 #include <string>
-#include "../headers/llvm_commons.h"
+#include <llvm/IR/Value.h>
 
 class VariableAST : public GenericAST {
     std::string name;
     int type;
     std::unique_ptr<GenericAST> value;
-
 
     public:
         VariableAST(
@@ -16,7 +17,7 @@ class VariableAST : public GenericAST {
             int type = 0,
             std::unique_ptr<GenericAST> value = nullptr
         ) : type(type), name(std::move(name)), value(std::move(value)){}
-        llvm::Value* codegen() {}
+        llvm::Value* codegen() override;
 };
 
 #endif

@@ -257,7 +257,7 @@ static std::unique_ptr<GenericAST> ParseTermExpr(){
     // }
     else if (current_token == token_identifier){
         std::string variableName = identifier_string;
-        auto variableNameAST = std::make_unique<StringAST>(variableName);
+        // auto variableNameAST = std::make_unique<StringAST>(variableName);
         get_next_token();
         if (current_token == '('){
             get_next_token();
@@ -282,7 +282,8 @@ static std::unique_ptr<GenericAST> ParseTermExpr(){
                 return functionCall;
             } else {return LogErrorPrototypeFunctionPrototype("Expected ')' in end of function call");}
         } else {
-            return variableNameAST;
+            return std::make_unique<VariableAST>(variableName, 0, nullptr);
+            // return variableNameAST;
         }
     }
     else if (current_token == '['){
