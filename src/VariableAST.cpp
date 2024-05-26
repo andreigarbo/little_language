@@ -17,16 +17,45 @@ Value* VariableAST::codegen(){
             return builder.CreateLoad(variableValue, "loadtmp");
         }
         else {
-            //assignment, variable is on left side and value is on right 
+            //assignment, variable is on left side and value is on right
+            llvm::Value* newValue = value->codegen();
+            llvm::Value* existingVariablePointer = variableTable::getVariableValue(name);
+            if (!existingVariablePointer) {
+                return LogErrorValue("Reference to undefined variable " + name);
+            }
+            builder.CreateStore(newValue, existingVariablePointer);
+            return existingVariablePointer;
         }
     } else {
         //variable declaration statement
+        llvm::AllocaInst* allocaInst;
+        switch (type) {
+            case token_int:
+                allocaInst = builder.CreateAlloca(llvm::Type::getInt32Ty(context), nullptr, name);
+                break;
+            case token_float:
+                allocaInst = builder.CreateAlloca(llvm::Type::getFloatTy(context), nullptr, name);
+                break;
+            case token_string:
+                allocaInst = builder.CreateAlloca(llvm::Type::getInt8PtrTy(context), nullptr, name);
 
+                // llvm::AllocaInst* allocaInst = builder.CreateAlloca(strConstant->getType(), nullptr, name);
+                // builder.CreateStore(strConstant, allocaInst);
+                // llvm::Value* strPointer = builder.CreateLoad(allocaInst);
+        }
         if (value == nullptr){
             //variable created but not initalized
+            return allocaInst;
         }
         else{
             //variable create and initialized
+            Value* codegenValue = value->codegen();
+            if (!codegenValue){
+                return LogErrorValue("Error during assignment of variable " + name);
+            }
+            builder.CreateStore(codegenValue, allocaInst);
+            variableTable.insertVariable(name, allocaInst);
+            return allocaInst;
         }
     }
 }

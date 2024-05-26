@@ -92,4 +92,14 @@ class FunctionCallAST : public GenericAST {
         llvm::Value* codegen() {}
 };
 
+class ReturnAST : public GenericAST {
+    std::unique_ptr<GenericAST> returnValue;
+
+    public:
+        ReturnAST(
+            std::unique_ptr<GenericAST> returnValue
+        ) : returnValue(std::move(returnValue)) {}
+        llvm::Value *codegen() override;
+};
+
 #endif

@@ -702,6 +702,9 @@ static std::unique_ptr<ImportAST> ParseImportExpr(){
 static std::unique_ptr<ReturnAST> ParseReturnExpr(){
     if (current_token == token_return){
         get_next_token();
+        if (current_token == ';'){
+            return std::make_unique<ReturnAST>(nullptr);
+        }
         auto returnValue = ParseTermExpr();
         return std::make_unique<ReturnAST>(std::move(returnValue));
     }

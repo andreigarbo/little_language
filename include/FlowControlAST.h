@@ -1,5 +1,5 @@
-#ifndef CONTROL_FLOW_AST_H
-#define CONTROL_FLOW_AST_H
+#ifndef FLOW_CONTROL_AST_H
+#define FLOW_CONTROL_AST_H
 
 #include "GenericAST.h"
 #include <memory>
