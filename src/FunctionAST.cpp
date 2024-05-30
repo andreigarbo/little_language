@@ -1,4 +1,5 @@
 #include "FunctionAST.h"
+#include "ErrorPrototype.h"
 
 llvm::Value* FunctionPrototypeAST::codegen(){
     //get LLVM objects
@@ -23,7 +24,7 @@ llvm::Value* FunctionPrototypeAST::codegen(){
         returnTypeObject = llvm::Type::getVoidTy(context);
     }
     else{
-        return LogErrorValue("Invalid return type for function " + name);
+        return LogErrorValue(("Invalid return type for function " + name).c_str());
     }
 
     //get function argument types
@@ -36,7 +37,7 @@ llvm::Value* FunctionPrototypeAST::codegen(){
         } else if (dynamic_cast<FunctionPrototypeArgumentStringAST*>(arg.get())) {
             argumentTypeObjects.push_back(llvm::Type::getInt8PtrTy(context));
         } else {
-            return LogErrorValue("Unknown argument type for function " + name);
+            return LogErrorValue(("Unknown argument type for function " + name).c_str());
         }
     }
 
@@ -47,59 +48,63 @@ llvm::Value* FunctionPrototypeAST::codegen(){
     //set the names for the arguments
     unsigned idx = 0;
     for (auto& arg : function->args()) {
-        arg.setName(dynamic_cast<FunctionPrototypeArgumentAST*>(arguments[idx++]->name);
+        std::unique_ptr<GenericAST>& argumentASTPtr = arguments[idx++];
+        FunctionPrototypeArgumentAST* argumentAST = dynamic_cast<FunctionPrototypeArgumentAST*>(argumentASTPtr.get());
+        std::string argumentASTName = argumentAST->name;
+        arg.setName(argumentASTName);
     }
 
     return function;
 }
 
 llvm::Value* FunctionAST::codegen() {
-    //get LLVM objects
-    LLVMState& llvmState = LLVMState::getInstance();
-    llvm::LLVMContext& context = llvmState.getContext();
-    llvm::IRBuilder<>& builder = llvmState.getBuilder();
+    // //get LLVM objects
+    // LLVMState& llvmState = LLVMState::getInstance();
+    // llvm::LLVMContext& context = llvmState.getContext();
+    // llvm::IRBuilder<>& builder = llvmState.getBuilder();
 
-    //codegening the function prototype
-    llvm::Function* function = dynamic_cast<llvm::Function*>(prototype->codegen());
-    if (!function) {
-        return LogErrorValue("Error generating code for function prototype");
-    } 
+    // //codegening the function prototype
+    // llvm::Function* function = dynamic_cast<llvm::Function*>(prototype->codegen());
+    // if (!function) {
+    //     return LogErrorValue("Error generating code for function prototype");
+    // } 
 
-    //create a basic block for function body
-    llvm::BasicBlock* functionBodyBasicBlock = llvm::BasicBlock::Create(context, "function", function);
+    // //create a basic block for function body
+    // llvm::BasicBlock* functionBodyBasicBlock = llvm::BasicBlock::Create(context, "function", function);
 
-    //set insert point for generating function body code
-    builder.SetInsertPoint(functionBodyBasicBlock);
+    // //set insert point for generating function body code
+    // builder.SetInsertPoint(functionBodyBasicBlock);
 
-    //variable to keep track of if and where return appears
-    bool hasReturn = false;
+    // //variable to keep track of if and where return appears
+    // bool hasReturn = false;
 
-    //generate code
-    for(auto& expression : body){
-        //check if GenericAST is return
-        if (dynamic_cast<ReturnAST*>(expression.get())) {
-            hasReturn = true;
-        }
-        //generating code, if error delete function
-        if (!expression->codegen()) {
-            function->eraseFromParent();
-            return LogErrorValue("Error generating code for function body");
-        }
-    }
+    // //generate code
+    // for(auto& expression : body){
+    //     //check if GenericAST is return
+    //     if (dynamic_cast<ReturnAST*>(expression.get())) {
+    //         hasReturn = true;
+    //     }
+    //     //generating code, if error delete function
+    //     if (!expression->codegen()) {
+    //         function->eraseFromParent();
+    //         return LogErrorValue("Error generating code for function body");
+    //     }
+    // }
 
-    //if no return encountered
-    if (!hasReturn) {
-        //get type to check if void
-        llvm::Type* returnType = function->getReturnType();
-        //if no return and not void, return an error
-        if (!returnTpe->isVoidTy()){
-            return LogErrorValue("Expected explicit return statement for non-void function");
-        }
-    }
-    //llvm function verifier
-    llvm::verifyFunction(*function);
+    // //if no return encountered
+    // if (!hasReturn) {
+    //     //get type to check if void
+    //     llvm::Type* returnType = function->getReturnType();
+    //     //if no return and not void, return an error
+    //     if (!returnType->isVoidTy()){
+    //         return LogErrorValue("Expected explicit return statement for non-void function");
+    //     }
+    // }
+    // //llvm function verifier
+    // llvm::verifyFunction(*function);
 
-    return function;
+    // return function;
+    return nullptr;
 }
 
 llvm::Value* ReturnAST::codegen() {
@@ -127,12 +132,12 @@ llvm::Value* FunctionCallAST::codegen() {
     //check if function exists
     llvm::Function* function = module.getFunction(callee);
     if (!function) {
-        return LogErrorValue("Reference to undeclared function: " + callee);
+        return LogErrorValue(("Reference to undeclared function: " + callee).c_str());
     }
 
     //check if correct no of args passed
     if (args.size() != function->arg_size()){
-        return LogErrorValue("Function " + callee + " expected " + std::to_string(function->arg_size()) + " arguments but got " + std::to_string(args.size()));
+        return LogErrorValue(("Function " + callee + " expected " + std::to_string(function->arg_size()) + " arguments but got " + std::to_string(args.size())).c_str());
     }
 
     //array to store generated code from arguments
@@ -150,3 +155,24 @@ llvm::Value* FunctionCallAST::codegen() {
     //return the function call
     return builder.CreateCall(function, codegenArgValues, "calltmp");
 }
+
+llvm::Value* FunctionPrototypeArgumentAST::codegen(){
+    return nullptr;
+}
+
+llvm::Value* FunctionPrototypeArgumentCharAST::codegen(){
+    return nullptr;
+}
+
+llvm::Value* FunctionPrototypeArgumentIntAST::codegen(){
+    return nullptr;
+}
+
+llvm::Value* FunctionPrototypeArgumentFloatAST::codegen(){
+    return nullptr;
+}
+
+llvm::Value* FunctionPrototypeArgumentStringAST::codegen(){
+    return nullptr;
+}
+

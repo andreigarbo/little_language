@@ -2,8 +2,8 @@
 #define FLOAT_AST_H
 
 #include "GenericAST.h"
-#include <memory>
-#include <llvm/IR/Value.h>
+#include "ErrorPrototype.h"
+#include <typeinfo>
 
 class FloatAST : public GenericAST {
     float value;
@@ -12,7 +12,13 @@ class FloatAST : public GenericAST {
         FloatAST(
             float value
         ) : value(value) {}
+        virtual ~FloatAST() = default;
         llvm::Value *codegen() override;
 };
+
+static std::unique_ptr<FloatAST> LogErrorPrototypeFloat(const char *string){
+    LogError(string);
+    return nullptr;
+}
 
 #endif

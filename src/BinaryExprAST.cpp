@@ -1,5 +1,6 @@
 #include "BinaryExprAST.h"
 #include "VariableTable.h"
+#include "ErrorPrototype.h"
 
 llvm::Value* BinaryExprAST::codegen(){
     //get LLVM objects
@@ -14,18 +15,24 @@ llvm::Value* BinaryExprAST::codegen(){
     llvm::Value* rightSide = rightMember->codegen();
 
     if (llvm::isa<llvm::ConstantDataArray>(leftSide)){
-        std::string leftVariableName = leftMember->value;
-        leftSide = variableTable.getVariableValue(leftVariableName);
-        if (!leftSide){
-            return LogErrorValue("Reference to undefined variable " + leftVariableName);
+        StringAST* leftMemberStringAST = dynamic_cast<StringAST*>(leftMember.get());
+        if (leftMemberStringAST){
+            std::string leftVariableName = leftMemberStringAST->value;
+            leftSide = variableTable.getVariableValue(leftVariableName);
+            if (!leftSide){
+                return LogErrorValue(("Reference to undefined variable " + leftVariableName).c_str());
+            }
         }
     }
 
-    if (llvm::isa<llvm:ConstantDataArray>(rightSide)){
-        std::string rightVariableName = rightMember->value;
-        rightSide = variableTable.getVariableValue(rightVariableName);
-        if (!rightSide){
-            return LogErrorValue("Reference to undefined variable " + rightVariableName);
+    if (llvm::isa<llvm::ConstantDataArray>(rightSide)){
+        StringAST* rightMemberStringAST = dynamic_cast<StringAST*>(rightMember.get());
+        if (rightMemberStringAST){
+            std::string rightVariableName = rightMemberStringAST->value;
+            rightSide = variableTable.getVariableValue(rightVariableName);
+            if (!rightSide){
+                return LogErrorValue(("Reference to undefined variable " + rightVariableName).c_str());
+            }
         }
     }
     
@@ -34,9 +41,9 @@ llvm::Value* BinaryExprAST::codegen(){
 
     //meaning int on both sides of operation
     if (leftValueType->isIntegerTy() && rightValueType->isIntegerTy()){
-        llvm::Value* leftInt = builder.CreateIntCast(leftSide, llvm::Type::getInt32Ty(context), true);
-        llvm::Value* rightInt = builder.CreateIntCast(rightSide, llvm::Type::getInt32Ty(context), true);
-        switch (op){
+        llvm::Value* leftInt = builder.CreateIntCast(leftSide, llvm::Type::getInt32Ty(context), true, "int_cast");
+        llvm::Value* rightInt = builder.CreateIntCast(rightSide, llvm::Type::getInt32Ty(context), true,  "int_cast");
+        switch (operation){
             case '+':
                 return builder.CreateAdd(leftInt, rightInt, "addtmp");
             case '-':
@@ -49,9 +56,9 @@ llvm::Value* BinaryExprAST::codegen(){
     }
     //meaning FloatAST on both sides of operation
     else if (leftValueType->isFloatTy() && rightValueType->isFloatTy()){
-        llvm::Value* leftFloat = builder.CreateFPCast(leftSide, llvm::Type::getFloatTy(context), true);
-        llvm::Value* rightFloat = builder.CreateFPCast(rightSide, llvm::Type::getFloatTy(context), true);
-        switch (op){
+        llvm::Value* leftFloat = builder.CreateFPCast(leftSide, llvm::Type::getFloatTy(context), "fp_cast");
+        llvm::Value* rightFloat = builder.CreateFPCast(rightSide, llvm::Type::getFloatTy(context), "fp_cast");
+        switch (operation){
             case '+':
                 return builder.CreateFAdd(leftFloat, rightFloat, "addtmp");
             case '-':

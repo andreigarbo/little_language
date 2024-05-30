@@ -1,8 +1,10 @@
 #include "LLVMState.h"
+#include "ErrorPrototype.h"
 
 LLVMState::LLVMState()
-    : TheContext(std::make_unique<llvm::LLVMContext>()),
-      Builder(std::make_unique<llvm::IRBuilder<>>(*theContext)) {}
+    : theContext(std::make_unique<llvm::LLVMContext>()),
+      builder(std::make_unique<llvm::IRBuilder<>>(*theContext)),
+      theModule(nullptr) {}
 
 llvm::LLVMContext& LLVMState::getContext() {
     return *theContext;

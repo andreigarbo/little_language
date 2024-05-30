@@ -1,4 +1,5 @@
 #include "FlowControlAST.h"
+#include "ErrorPrototype.h"
 
 llvm::Value* DoWhileAST::codegen(){
     //get LLVM objects
@@ -7,7 +8,7 @@ llvm::Value* DoWhileAST::codegen(){
     llvm::LLVMContext& context = llvmState.getContext();
 
     //get parent function to insert blocks
-    llvm::Function* parentFunction = builder.GetInsertBlock*()->GetParent();
+    llvm::Function* parentFunction = builder.GetInsertBlock()->getParent();
 
     //create the basic blocks
     llvm::BasicBlock* loopBasicBlock = llvm::BasicBlock::Create(context, "loopcontent", parentFunction);

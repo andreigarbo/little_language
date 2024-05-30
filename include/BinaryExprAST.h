@@ -2,8 +2,15 @@
 #define BINARY_EXPR_AST
 
 #include "GenericAST.h"
-#include <memory>
-#include <llvm/IR/Value.h>
+#include <vector>
+#include <typeinfo>
+#include "LLVMState.h"
+#include "StringAST.h"
+#include "IntAST.h"
+#include "FloatAST.h"
+#include "VariableAST.h"
+#include "ErrorValue.h"
+
 
 class BinaryExprAST : public GenericAST {
     char operation;
@@ -15,6 +22,7 @@ class BinaryExprAST : public GenericAST {
             std::unique_ptr<GenericAST> leftMember,
             std::unique_ptr<GenericAST> rightMember
         ) : operation(std::move(operation)), leftMember(std::move(leftMember)), rightMember(std::move(rightMember)) {}
+        virtual ~BinaryExprAST() = default;
         llvm::Value* codegen() override;
 };
 

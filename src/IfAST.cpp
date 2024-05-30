@@ -1,4 +1,5 @@
 #include "FlowControlAST.h"
+#include "ErrorPrototype.h"
 
 llvm::Value* IfAST::codegen(){
     //get LLVM objects
@@ -19,7 +20,7 @@ llvm::Value* IfAST::codegen(){
     conditionCodegen = builder.CreateICmpNE(conditionCodegen, llvm::ConstantInt::get(context, llvm::APInt(1, 0)), "ifcond");
 
     //get parent function to insert blocks
-    llvm::Function* parentFunction = builder.GetInsertBlock()->GetParent();
+    llvm::Function* parentFunction = builder.GetInsertBlock()->getParent();
 
     //create blocks for then, else and the merge
     llvm::BasicBlock* thenBasicBlock = llvm::BasicBlock::Create(context, "then", parentFunction);
@@ -43,7 +44,7 @@ llvm::Value* IfAST::codegen(){
     thenBasicBlock = builder.GetInsertBlock();
 
     //insert else basic block in list
-    function->getBasicBlockList().push_back(elseBasicBlock);
+    parentFunction->getBasicBlockList().push_back(elseBasicBlock);
 
     //set insert point to else block
     builder.SetInsertPoint(elseBasicBlock);
@@ -59,7 +60,7 @@ llvm::Value* IfAST::codegen(){
     elseBasicBlock = builder.GetInsertBlock();
 
     //adding merge block to block list
-    function->getBasicBlockList().push_back(mergeBasicBlock);
+    parentFunction->getBasicBlockList().push_back(mergeBasicBlock);
     builder.SetInsertPoint(mergeBasicBlock);
      
     return mergeBasicBlock;

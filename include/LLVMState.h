@@ -1,12 +1,14 @@
 #ifndef LLVM_STATE_H
 #define LLVM_STATE_H
 
-#include "llvm/IR/IRBuilder.h"
-#include "llvm/IR/LLVMContext.h"
-#include "llvm/IR/Module.h"
-#include <map>
-#include <memory>
+#include <llvm/IR/IRBuilder.h>
+#include <llvm/IR/LLVMContext.h>
+#include <llvm/IR/Module.h>
+#include <llvm/IR/Value.h>
 #include <string>
+#include <llvm/IR/Value.h>
+#include <map>
+#include <typeinfo>
 
 class LLVMState {
 public:
@@ -23,7 +25,7 @@ public:
 
 private:
     LLVMState();
-    
+    virtual ~LLVMState() = default;
     LLVMState(const LLVMState&) = delete;
     LLVMState& operator=(const LLVMState&) = delete;
     LLVMState(LLVMState&&) = delete;

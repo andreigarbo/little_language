@@ -1,6 +1,8 @@
 #include "VariableAST.h"
+#include "ErrorPrototype.h"
+
 //TODO
-Value* VariableAST::codegen(){
+llvm::Value* VariableAST::codegen(){
     //get LLVM objects
     LLVMState& llvmState = LLVMState::getInstance();
     llvm::IRBuilder<>& builder = llvmState.getBuilder();
@@ -13,15 +15,16 @@ Value* VariableAST::codegen(){
         //existing variable
         if (value == nullptr){
             //value reference in right side of assignment
-            Value* variableValue = variableTable.getVariableValue(name);
-            return builder.CreateLoad(variableValue, "loadtmp");
+            llvm::Value* variableValue = variableTable.getVariableValue(name);
+            llvm::Type* variableType = variableValue->getType()->getPointerElementType();
+            return builder.CreateLoad(variableType, variableValue, "loadtmp");
         }
         else {
             //assignment, variable is on left side and value is on right
             llvm::Value* newValue = value->codegen();
-            llvm::Value* existingVariablePointer = variableTable::getVariableValue(name);
+            llvm::Value* existingVariablePointer = variableTable.getVariableValue(name);
             if (!existingVariablePointer) {
-                return LogErrorValue("Reference to undefined variable " + name);
+                return LogErrorValue(("Reference to undefined variable " + name).c_str());
             }
             builder.CreateStore(newValue, existingVariablePointer);
             return existingVariablePointer;
@@ -49,9 +52,9 @@ Value* VariableAST::codegen(){
         }
         else{
             //variable create and initialized
-            Value* codegenValue = value->codegen();
+            llvm::Value* codegenValue = value->codegen();
             if (!codegenValue){
-                return LogErrorValue("Error during assignment of variable " + name);
+                return LogErrorValue(("Error during assignment of variable " + name).c_str());
             }
             builder.CreateStore(codegenValue, allocaInst);
             variableTable.insertVariable(name, allocaInst);

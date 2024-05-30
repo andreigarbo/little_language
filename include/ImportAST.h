@@ -2,9 +2,8 @@
 #define IMPORT_AST_H
 
 #include "GenericAST.h"
-#include <memory>
-#include <string>
-#include <llvm/IR/Value.h>
+#include "ErrorPrototype.h"
+#include <typeinfo>
 
 class ImportAST : public GenericAST {
     std::string library;
@@ -13,7 +12,13 @@ class ImportAST : public GenericAST {
         ImportAST(
             std::string library
         ) : library(std::move(library)) {}
+        virtual ~ImportAST() = default;
         llvm::Value *codegen() override;
 };
+
+static std::unique_ptr<ImportAST> LogErrorPrototypeImport(const char *string){
+    LogError(string);
+    return nullptr;
+}
 
 #endif
