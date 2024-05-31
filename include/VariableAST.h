@@ -6,6 +6,8 @@
 #include <llvm/IR/Module.h>
 #include <llvm/IR/Type.h>
 #include <llvm/IR/Value.h>
+#include <llvm/ADT/Twine.h>
+
 
 #include <memory>
 #include <typeinfo>

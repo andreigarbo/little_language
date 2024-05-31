@@ -25,3 +25,7 @@ std::map<std::string, llvm::Value*>& LLVMState::getNamedValues() {
 void LLVMState::createModule(const std::string &moduleName) {
     theModule = std::make_unique<llvm::Module>(moduleName, getContext());
 }
+
+void LLVMState::printModule() {
+    theModule->print(llvm::outs(), nullptr);
+}

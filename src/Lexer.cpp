@@ -2,7 +2,6 @@
 
 //function for getting tokens from the input
 int Lexer::get_token(){
-    std::cout << (char)last_char<<std::endl;
     //skips any and all whitespace characters present before the token
     while(isspace(last_char)){
         last_char = file.get();
@@ -72,6 +71,9 @@ int Lexer::get_token(){
         }
         else if(identifier_string == "return"){
             return token_return;
+        }
+        else if(identifier_string == "void"){
+            return token_void;
         }
 
         //if not a specially defined keyword, return token_identifier to signal a custom word (such as a variable name)

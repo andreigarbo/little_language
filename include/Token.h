@@ -10,36 +10,37 @@ enum Token{
     token_float = -3,
     token_char = -4,
     token_string = -5,
-    token_array = -6,
-    token_file = -7,
-    token_struct = -8,
+    token_void = -6,
+    token_array = -7,
+    token_file = -8,
+    token_struct = -9,
 
     //flow control
-    token_if = -9,
-    token_else = -10,
-    token_while = -11,
-    token_do = -12,
-    token_for = -13,
-    token_in = -14,
-    token_from = -15,
-    token_to = -16,
-    token_iterate = -17,
+    token_if = -10,
+    token_else = -11,
+    token_while = -12,
+    token_do = -13,
+    token_for = -14,
+    token_in = -15,
+    token_from = -16,
+    token_to = -17,
+    token_iterate = -18,
 
     //strings or numbers
-    token_identifier = -18,
-    token_int_number = -19,
-    token_float_number = -20,
+    token_identifier = -19,
+    token_int_number = -20,
+    token_float_number = -21,
 
     //operators
-    token_le = -21,
-    token_ge = -22,
-    token_eq = -23,
-    token_ne = -24,
+    token_le = -22,
+    token_ge = -23,
+    token_eq = -24,
+    token_ne = -25,
 
     //misc
-    token_global = -25,
-    token_import = -26,
-    token_return = -27
+    token_global = -26,
+    token_import = -27,
+    token_return = -28
 };
 
 #endif

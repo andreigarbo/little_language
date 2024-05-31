@@ -2,6 +2,8 @@
 #include "VariableTable.h"
 #include "ErrorPrototype.h"
 
+#include <iostream>
+
 llvm::Value* BinaryExprAST::codegen(){
     //get LLVM objects
     LLVMState& llvmState = LLVMState::getInstance();

@@ -11,16 +11,16 @@ llvm::Value* FunctionPrototypeAST::codegen(){
 
     //find return type
     llvm::Type* returnTypeObject;
-    if (returnType == "int"){
+    if (returnType == token_int){
         returnTypeObject = llvm::Type::getInt32Ty(context);
     }
-    else if (returnType == "float"){
+    else if (returnType == token_float){
         returnTypeObject = llvm::Type::getFloatTy(context);
     }
-    else if (returnType == "string"){
+    else if (returnType == token_string){
         // returnTypeObject = llvm::Type::
     }
-    else if (returnType == "void"){
+    else if (returnType == token_void){
         returnTypeObject = llvm::Type::getVoidTy(context);
     }
     else{

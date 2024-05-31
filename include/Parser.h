@@ -21,6 +21,7 @@
 #include "FlowControlAST.h"
 
 #include <typeinfo>
+#include <string>
 
 class Parser {
 
@@ -64,8 +65,8 @@ class Parser {
         std::unique_ptr<GenericAST> ParseForStatementExpr();
 
         //function parsing related 
-        std::unique_ptr<FunctionAST> ParseFunctionExpr();
-        std::unique_ptr<FunctionPrototypeAST> ParseFunctionPrototypeExpr();
+        std::unique_ptr<FunctionAST> ParseFunctionExpr(int functionType, std::string functionName);
+        std::unique_ptr<FunctionPrototypeAST> ParseFunctionPrototypeExpr(int functionType, std::string functionName);
         std::unique_ptr<GenericAST> ParseFunctionPrototypeArgumentExpr();
         std::vector<std::unique_ptr<GenericAST>> ParseFunctionBodyExpr();
 

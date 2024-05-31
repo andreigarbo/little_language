@@ -22,6 +22,7 @@ public:
     llvm::Module& getModule();
     std::map<std::string, llvm::Value*>& getNamedValues();
     void createModule(const std::string &moduleName);
+    void printModule();
 
 private:
     LLVMState();

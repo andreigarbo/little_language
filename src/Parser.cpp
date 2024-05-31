@@ -328,15 +328,39 @@ std::unique_ptr<GenericAST> Parser::ParseDeclarationOrAssignmentExpr(){
                 //maybe this is a function call on the right side. Not sure how to differentiate
                 get_next_token();
                 std::unique_ptr<GenericAST> rightSide = ParseTermExpr();
+                if (current_token != ';') {
+                    return LogErrorPrototype("Expected ';' after variable declaration");
+                }
+                get_next_token();
                 std::unique_ptr<GenericAST> variableDeclaration;
                 variableDeclaration = std::make_unique<VariableAST>(name, type, std::move(rightSide));
                 return variableDeclaration;
             }
             //meaning that this is a simple variable declaration, without an assignment
+            else if (current_token == '(') {
+                // std::unique_ptr<FunctionAST> Parser::ParseFunctionExpr(){
+                //     auto prototype = ParseFunctionPrototypeExpr();
+                //     if (current_token == ';'){
+                //         get_next_token();
+                //         //meaning that this is a prototype declaration only
+                //         std::vector<std::unique_ptr<GenericAST>> emptyBody;
+                //         auto function = std::make_unique<FunctionAST>(std::move(prototype), std::move(emptyBody));
+                //         return function;
+                //     }
+                //     auto body = ParseFunctionBodyExpr();
+                //     auto function = std::make_unique<FunctionAST>(std::move(prototype), std::move(body));
+                //     return function;
+                // }
+                std::unique_ptr<GenericAST> function = ParseFunctionExpr(type, name);
+                return function;
+
+            }
             else{
-                int type = current_token;
-                get_next_token();
                 std::string name = identifier_string;
+                if (current_token != ';') {
+                    return LogErrorPrototype("Expected ';' after variable declaration");
+                }
+                get_next_token();
                 std::unique_ptr<GenericAST> variableDeclaration;
                 variableDeclaration = std::make_unique<VariableAST>(name, type, nullptr);
                 return variableDeclaration;
@@ -349,6 +373,10 @@ std::unique_ptr<GenericAST> Parser::ParseDeclarationOrAssignmentExpr(){
             if (current_token == '='){
                 get_next_token();
                 std::unique_ptr<GenericAST> rightSide = ParseTermExpr();
+                if (current_token != ';') {
+                    return LogErrorPrototype("Expected ';' after variable assignment");
+                }
+                get_next_token();
                 std::unique_ptr<GenericAST> variableDeclaration;
                 variableDeclaration = std::make_unique<VariableAST>(name, 0, std::move(rightSide));
                 return variableDeclaration;
@@ -366,10 +394,18 @@ std::unique_ptr<GenericAST> Parser::ParseDeclarationOrAssignmentExpr(){
                     }
                     if (current_token == ')'){
                         get_next_token();
+                        if (current_token != ';') {
+                            return LogErrorPrototype("Expected ';' after variable assignment");
+                        }
+                        get_next_token();
                         auto functionCall = std::make_unique<FunctionCallAST>(std::move(name), std::move(argumentList));
                         return functionCall;
                     }
                 } else if (current_token == ')'){
+                    get_next_token();
+                    if (current_token != ';') {
+                        return LogErrorPrototype("Expected ';' after variable assignment");
+                    }
                     get_next_token();
                     auto functionCall = std::make_unique<FunctionCallAST>(std::move(name), std::move(argumentList));
                     return functionCall;
@@ -439,36 +475,26 @@ std::unique_ptr<GenericAST> Parser::ParseFunctionPrototypeArgumentExpr() {
     }
 }
 
-std::unique_ptr<FunctionPrototypeAST> Parser::ParseFunctionPrototypeExpr(){
-    //checks if the first symbol is a type declaration  
-    if (isTypeDeclaration(current_token)){
-        //parses a string, which will be the type declaration
-        std::string functionType = identifier_string;
+std::unique_ptr<FunctionPrototypeAST> Parser::ParseFunctionPrototypeExpr(int functionType, std::string functionName){
+    if (current_token == '('){
         get_next_token();
-        if (current_token == token_identifier){
-            std::string functionName = identifier_string;
-            get_next_token();
-            if (current_token == '('){
+        std::vector<std::unique_ptr<GenericAST>> argumentList;
+        //parsing arguments one by one
+        if (isTypeDeclaration(current_token)){
+            auto argument = ParseFunctionPrototypeArgumentExpr();
+            argumentList.push_back(std::move(argument));
+            while (current_token == ','){
                 get_next_token();
-                std::vector<std::unique_ptr<GenericAST>> argumentList;
-                //parsing arguments one by one
-                if (isTypeDeclaration(current_token)){
-                    auto argument = ParseFunctionPrototypeArgumentExpr();
-                    argumentList.push_back(std::move(argument));
-                    while (current_token == ','){
-                        get_next_token();
-                        auto argument = ParseFunctionPrototypeArgumentExpr();
-                        argumentList.push_back(std::move(argument));
-                    } 
-                }
-                if (current_token == ')'){
-                    get_next_token();   
-                    auto functionProtoype = std::make_unique<FunctionPrototypeAST>(functionType, functionName, std::move(argumentList));//generate Prototype AST and return
-                    return functionProtoype;
-                } else {return LogErrorPrototypeFunctionPrototype("Expected ')' in end of function prototype");}
-            } else {return LogErrorPrototypeFunctionPrototype("Expected '(' in beginning of function prototype");} //handles lack of '(' after function name
-        } else {return LogErrorPrototypeFunctionPrototype("Expected function type at beginning of declaration");} //handles no string at start of line
-    } else {return LogErrorPrototypeFunctionPrototype("Expected function name to be string");}
+                auto argument = ParseFunctionPrototypeArgumentExpr();
+                argumentList.push_back(std::move(argument));
+            } 
+        }
+        if (current_token == ')'){
+            get_next_token();   
+            auto functionProtoype = std::make_unique<FunctionPrototypeAST>(functionType, functionName, std::move(argumentList));//generate Prototype AST and return
+            return functionProtoype;
+        } else {return LogErrorPrototypeFunctionPrototype("Expected ')' in end of function prototype");}
+    } else {return LogErrorPrototypeFunctionPrototype("Expected '(' in beginning of function prototype");} //handles lack of '(' after function name
 }
 
 std::unique_ptr<GenericAST> Parser::ParseStatementExpr(){
@@ -490,10 +516,12 @@ std::unique_ptr<GenericAST> Parser::ParseStatementExpr(){
     else if (current_token == token_identifier || isTypeDeclaration(current_token)){
         std::cout << "Detected identifier or type declaration. Parsing declaration or assignment" << std::endl;
         auto declarationOrAssignment = ParseDeclarationOrAssignmentExpr();
-        if (current_token == ';'){
-            get_next_token();
-            return declarationOrAssignment;
-        } else {return LogErrorPrototype("Expected ';' after statement");}
+        return declarationOrAssignment;
+
+        // if (current_token == ';'){
+        //     get_next_token();
+        //     return declarationOrAssignment;
+        // } else {return LogErrorPrototype("Expected ';' after statement");}
     }
     else if (current_token == token_return){
         std::cout << "Detected return statement\n";
@@ -505,8 +533,8 @@ std::unique_ptr<GenericAST> Parser::ParseStatementExpr(){
     }
 }
 
-std::unique_ptr<FunctionAST> Parser::ParseFunctionExpr(){
-    auto prototype = ParseFunctionPrototypeExpr();
+std::unique_ptr<FunctionAST> Parser::ParseFunctionExpr(int functionType, std::string functionName){
+    auto prototype = ParseFunctionPrototypeExpr(functionType, functionName);
     if (current_token == ';'){
         get_next_token();
         //meaning that this is a prototype declaration only
@@ -564,22 +592,24 @@ std::vector<std::unique_ptr<GenericAST>> Parser::ParseFile(){
     lexer.setFilename(filename);
     get_next_token();
     while(true){
-        std::cout << current_token << std::endl;
         switch(current_token){
             case token_eof:
             {
                 std::cout << "EOF detected" << std::endl;
                 return std::move(ASTarray);
             }
+            case token_identifier:
             case token_int:
             case token_float:
             case token_char:
             case token_string:
             case token_array:
+            case token_void:
             {
-                std::cout << "Detected type definition. Parsing a function" << std::endl;
-                auto function = ParseFunctionExpr();
-                ASTarray.push_back(std::move(function));
+                std::cout << "Detected type definition. Parsing a declaration or assignment" << std::endl;
+                // auto function = ParseFunctionExpr();
+                auto astNode = ParseDeclarationOrAssignmentExpr();
+                ASTarray.push_back(std::move(astNode));
                 break;
             }
             case token_global:
@@ -598,8 +628,8 @@ std::vector<std::unique_ptr<GenericAST>> Parser::ParseFile(){
             }
             default:
             {
-                //std::cout<<"Expected to find EOF of literal token. Found " << current_token << " or " << (char)current_token << std::endl;
-                //std::cout << identifier_string << std::endl;
+                std::cout<<"Expected to find EOF of literal token. Found " << current_token << " or " << (char)current_token << std::endl;
+                std::cout << identifier_string << std::endl;
                 return LogErrorPrototypeVector("Unexpected token encountered while parsing");
             }
         }

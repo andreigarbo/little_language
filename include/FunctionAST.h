@@ -25,13 +25,13 @@
 
 
 class FunctionPrototypeAST : public GenericAST {
-    std::string returnType;
+    int returnType;
     std::string name;
     std::vector<std::unique_ptr<GenericAST>> arguments;
 
     public:
         FunctionPrototypeAST(
-            std::string returnType,
+            int returnType,
             std::string name,
             std::vector<std::unique_ptr<GenericAST>> arguments
         ) : returnType(returnType), name(name), arguments(std::move(arguments)) {}

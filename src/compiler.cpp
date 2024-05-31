@@ -58,18 +58,21 @@ int main(int ac, char** argv) {
     Parser parser(filename);
     auto ast = parser.ParseFile();
 
-    for (auto& a : ast) {
-        std::cout << "Object: ";
-        if (a) {
-            std::cout<< typeid(*a).name() << std::endl;
-        }
-        else {
-            std::cout << "null" << std::endl;
-        }
-    }
-
     std::cout << "Parsed file " + filename + "\n";
 
+    LLVMState &llvmState = LLVMState::getInstance(); 
+
+    llvmState.createModule("littleModule");
+
+
+    for (auto& a : ast) {
+        std::cout<< typeid(*a).name() << std::endl;
+        a->codegen();
+    }
+
+    std::cout << "Generated code\n";
+
+    llvmState.printModule();
 
 
     return 0;

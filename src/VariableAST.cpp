@@ -1,6 +1,8 @@
 #include "VariableAST.h"
 #include "ErrorPrototype.h"
 
+#include <iostream>
+
 //TODO
 llvm::Value* VariableAST::codegen(){
     //get LLVM objects
@@ -10,6 +12,9 @@ llvm::Value* VariableAST::codegen(){
 
     //get variable table
     VariableTable& variableTable = VariableTable::getInstance();
+
+    llvm::BasicBlock* variableBasicBlock = llvm::BasicBlock::Create(context, "variable");
+    builder.SetInsertPoint(variableBasicBlock);
 
     if (type == 0){
         //existing variable
@@ -34,7 +39,10 @@ llvm::Value* VariableAST::codegen(){
         llvm::AllocaInst* allocaInst;
         switch (type) {
             case token_int:
-                allocaInst = builder.CreateAlloca(llvm::Type::getInt32Ty(context), nullptr, name);
+                std::cout << "here" << std::endl;
+                allocaInst = builder.CreateAlloca(llvm::Type::getInt32Ty(context), nullptr, llvm::Twine(name));
+                std::cout << "here" << std::endl;
+                std::cout << allocaInst << std::endl;
                 break;
             case token_float:
                 allocaInst = builder.CreateAlloca(llvm::Type::getFloatTy(context), nullptr, name);
@@ -48,9 +56,11 @@ llvm::Value* VariableAST::codegen(){
         }
         if (value == nullptr){
             //variable created but not initalized
+
             return allocaInst;
         }
-        else{
+        else{                    
+
             //variable create and initialized
             llvm::Value* codegenValue = value->codegen();
             if (!codegenValue){
