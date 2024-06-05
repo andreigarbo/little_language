@@ -13,6 +13,7 @@ llvm::Value* BinaryExprAST::codegen(){
     //get variable table
     VariableTable& variableTable = VariableTable::getInstance();
 
+
     llvm::Value* leftSide = leftMember->codegen();
     llvm::Value* rightSide = rightMember->codegen();
 
@@ -54,6 +55,18 @@ llvm::Value* BinaryExprAST::codegen(){
                 return builder.CreateMul(leftInt, rightInt, "multmp");
             case '/':
                 return builder.CreateSDiv(leftInt, rightInt, "divtmp");
+            case '<':
+                return builder.CreateICmpSLT(leftInt, rightInt, "cmptmp");
+            case '>':
+                return builder.CreateICmpSGT(leftInt, rightInt, "cmptmp");
+            case token_le:
+                return builder.CreateICmpSLE(leftInt, rightInt, "cmptmp");
+            case token_ge:
+                return builder.CreateICmpSGE(leftInt, rightInt, "cmptmp");
+            case token_eq:
+                return builder.CreateICmpEQ(leftInt, rightInt, "cmptmp");
+            case token_ne:
+                return builder.CreateICmpNE(leftInt, rightInt, "cmptmp");
         }
     }
     //meaning FloatAST on both sides of operation
@@ -69,6 +82,18 @@ llvm::Value* BinaryExprAST::codegen(){
                 return builder.CreateFMul(leftFloat, rightFloat, "multmp");
             case '/':
                 return builder.CreateFDiv(leftFloat, rightFloat, "divtmp");
+            case '<':
+                return builder.CreateFCmpULT(leftFloat, rightFloat, "cmptmp");
+            case '>':
+                return builder.CreateFCmpUGT(leftFloat, rightFloat, "cmptmp");
+            case token_le:
+                return builder.CreateFCmpULE(leftFloat, rightFloat, "cmptmp");
+            case token_ge:
+                return builder.CreateFCmpUGE(leftFloat, rightFloat, "cmptmp");
+            case token_eq:
+                return builder.CreateFCmpUEQ(leftFloat, rightFloat, "cmptmp");
+            case token_ne:
+                return builder.CreateFCmpUNE(leftFloat, rightFloat, "cmptmp");
         }
     }
     else {

@@ -22,7 +22,8 @@
 #include "LLVMState.h"
 #include "ErrorValue.h"
 #include "ErrorPrototype.h"
-
+#include "VariableTable.h"
+#include "Utils.h"
 
 class FunctionPrototypeAST : public GenericAST {
     int returnType;

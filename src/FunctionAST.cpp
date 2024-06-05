@@ -1,13 +1,16 @@
 #include "FunctionAST.h"
 #include "ErrorPrototype.h"
 
+#include <iostream>
+
 llvm::Value* FunctionPrototypeAST::codegen(){
     //get LLVM objects
     LLVMState& llvmState = LLVMState::getInstance();
     llvm::IRBuilder<>& builder = llvmState.getBuilder();
     llvm::LLVMContext& context = llvmState.getContext();
-    llvm::Module& module = llvmState.getModule();
+    llvm::Module& myModule = llvmState.getModule();
 
+    VariableTable& variableTable = VariableTable::getInstance();
 
     //find return type
     llvm::Type* returnTypeObject;
@@ -44,8 +47,12 @@ llvm::Value* FunctionPrototypeAST::codegen(){
     //create function type
     llvm::FunctionType* funcType = llvm::FunctionType::get(returnTypeObject, argumentTypeObjects, false);
     //create the function
-    llvm::Function* function = llvm::Function::Create(funcType, llvm::Function::ExternalLinkage, name, module);
+    llvm::Function* function = llvm::Function::Create(funcType, llvm::Function::ExternalLinkage, name, myModule);
     //set the names for the arguments
+    std::string currentFunctionName = function->getName().str();
+
+    variableTable.enterScope(currentFunctionName);
+
     unsigned idx = 0;
     for (auto& arg : function->args()) {
         std::unique_ptr<GenericAST>& argumentASTPtr = arguments[idx++];
@@ -58,53 +65,78 @@ llvm::Value* FunctionPrototypeAST::codegen(){
 }
 
 llvm::Value* FunctionAST::codegen() {
-    // //get LLVM objects
-    // LLVMState& llvmState = LLVMState::getInstance();
-    // llvm::LLVMContext& context = llvmState.getContext();
-    // llvm::IRBuilder<>& builder = llvmState.getBuilder();
+    //get LLVM objects
+    LLVMState& llvmState = LLVMState::getInstance();
+    llvm::LLVMContext& context = llvmState.getContext();
+    llvm::IRBuilder<>& builder = llvmState.getBuilder();
+    llvm::Module& myModule = llvmState.getModule();
 
-    // //codegening the function prototype
-    // llvm::Function* function = dynamic_cast<llvm::Function*>(prototype->codegen());
-    // if (!function) {
-    //     return LogErrorValue("Error generating code for function prototype");
-    // } 
+    VariableTable& variableTable = VariableTable::getInstance();
+    
 
-    // //create a basic block for function body
-    // llvm::BasicBlock* functionBodyBasicBlock = llvm::BasicBlock::Create(context, "function", function);
+    //codegening the function prototype
+    llvm::Function* function = llvm::dyn_cast<llvm::Function>(prototype->codegen());
+    if (!function) {
+        return LogErrorValue("Error generating code for function prototype");
+    } 
+    //set the current function to be used by other 
+    llvmState.setCurrentFunction(function);
 
-    // //set insert point for generating function body code
-    // builder.SetInsertPoint(functionBodyBasicBlock);
+    //enter scope in variable table for new function
+    std::string currentFunctionName = function->getName().str();
 
-    // //variable to keep track of if and where return appears
-    // bool hasReturn = false;
+    //create a basic block for function body
+    llvm::BasicBlock* functionBodyBasicBlock = llvm::BasicBlock::Create(context, "function", function);
 
-    // //generate code
-    // for(auto& expression : body){
-    //     //check if GenericAST is return
-    //     if (dynamic_cast<ReturnAST*>(expression.get())) {
-    //         hasReturn = true;
-    //     }
-    //     //generating code, if error delete function
-    //     if (!expression->codegen()) {
-    //         function->eraseFromParent();
-    //         return LogErrorValue("Error generating code for function body");
-    //     }
-    // }
+    //set insert point for generating function body code
+    builder.SetInsertPoint(functionBodyBasicBlock);
 
-    // //if no return encountered
-    // if (!hasReturn) {
-    //     //get type to check if void
-    //     llvm::Type* returnType = function->getReturnType();
-    //     //if no return and not void, return an error
-    //     if (!returnType->isVoidTy()){
-    //         return LogErrorValue("Expected explicit return statement for non-void function");
-    //     }
-    // }
-    // //llvm function verifier
-    // llvm::verifyFunction(*function);
+    //allocating variables from function prototype
+    unsigned idx = 0;
+    for (auto& arg : function->args()) {
+        llvm::Type* argType = arg.getType();
+        std::string argName = arg.getName().str();
 
-    // return function;
-    return nullptr;
+        llvm::Value* allocatedVariable = CreateAllocaVar(&myModule, function, argType, argName);
+        //llvm::Value* argValue = &arg;
+        builder.CreateStore(&arg, allocatedVariable);
+        variableTable.insertVariable(argName, allocatedVariable);
+    }
+
+    //variable to keep track of if and where return appears
+    bool hasReturn = false;
+
+    //generate code
+    for(auto& expression : body){
+        //check if GenericAST is return
+        if (dynamic_cast<ReturnAST*>(expression.get())) {
+            hasReturn = true;
+        }
+        //generating code, if error delete function
+        if (!expression->codegen()) {
+            function->eraseFromParent();
+            return LogErrorValue("Error generating code for function body");
+        }
+
+    }
+
+    //if no return encountered
+    if (!hasReturn) {
+        //get type to check if void
+        llvm::Type* returnType = function->getReturnType();
+        //if no return and not void, return an error
+        if (!returnType->isVoidTy()){
+            return LogErrorValue("Expected explicit return statement for non-void function");
+        }
+    }
+
+    variableTable.exitScope();
+
+    //llvm function verifier
+    llvm::verifyFunction(*function);
+
+    return function;
+    // return nullptr;
 }
 
 llvm::Value* ReturnAST::codegen() {

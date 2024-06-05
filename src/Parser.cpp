@@ -288,7 +288,20 @@ std::unique_ptr<GenericAST> Parser::ParseForStatementExpr() {
 }
 
 std::unique_ptr<GenericAST> Parser::ParseConditionExpr(){
+    bool negate_left_side = false;
+    if (current_token == '!') {
+        negate_left_side = true;
+        get_next_token();
+    }
     auto left_side = ParseTermExpr();
+    //TODO add logic for single term binary expression (like if (a))
+    if (current_token == ')') {
+        if (negate_left_side) {
+            return std::make_unique<BinaryExprAST>(token_eq, std::move(left_side), nullptr);
+        } else {
+            return std::make_unique<BinaryExprAST>(token_ne, std::move(left_side), nullptr);
+        }
+    }
     if (current_token == '<' || current_token == '>' || current_token == token_le || current_token == token_ge || current_token == token_eq || current_token == token_ne) {
         char op = current_token;
         get_next_token();

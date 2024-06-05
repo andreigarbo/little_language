@@ -17,6 +17,7 @@
 #include "ErrorValue.h"
 #include "LLVMState.h"
 #include "VariableTable.h"
+#include "Utils.h"
 
 class VariableAST : public GenericAST {
     std::string name;

@@ -19,5 +19,4 @@ static std::vector<std::unique_ptr<GenericAST>> LogErrorPrototypeVector(const ch
     return {};
 }
 
-
 #endif

@@ -7,22 +7,24 @@
 #include <llvm/IR/Value.h>
 #include <string>
 #include <llvm/IR/Value.h>
+#include <llvm/Support/raw_ostream.h>
 #include <map>
 #include <typeinfo>
+#include <stack>
 
 class LLVMState {
 public:
-    static LLVMState& getInstance() {
-        static LLVMState instance;
-        return instance;
-    }
+    static LLVMState& getInstance();
 
     llvm::LLVMContext& getContext();
     llvm::IRBuilder<>& getBuilder();
     llvm::Module& getModule();
-    std::map<std::string, llvm::Value*>& getNamedValues();
-    void createModule(const std::string &moduleName);
     void printModule();
+    llvm::Function& getCurrentFunction();
+    void setCurrentFunction(llvm::Function* function);
+    llvm::BasicBlock& getCurrentBasicBlock();
+    void setCurrentBasicBlock(llvm::BasicBlock* basicBlock);
+    void printModuleToFile(const std::string& filename);
 
 private:
     LLVMState();
@@ -36,6 +38,9 @@ private:
     std::unique_ptr<llvm::IRBuilder<>> builder;
     std::unique_ptr<llvm::Module> theModule;
     std::map<std::string, llvm::Value *> NamedValues;
+    std::stack<std::string> functionScopes;
+    llvm::Function* currentFunction;
+    llvm::BasicBlock* currentBasicBlock;
 };
 
 #endif

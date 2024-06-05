@@ -6,6 +6,9 @@
 #include "LLVMState.h"
 #include "ErrorValue.h"
 #include "ErrorPrototype.h"
+#include "LLVMState.h"
+
+#include <iostream>
 
 llvm::Value* IntAST::codegen() {
     return llvm::ConstantInt::get(LLVMState::getInstance().getContext(), llvm::APInt(32, value, true));

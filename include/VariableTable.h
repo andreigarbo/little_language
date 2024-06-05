@@ -12,18 +12,21 @@ class VariableTable {
 
 private:
     std::unique_ptr<std::unordered_map<std::string, llvm::Value*>> globalScope;
-    std::stack<std::unique_ptr<std::unordered_map<std::string, llvm::Value*>>> localScopes;
+    std::unordered_map<std::string, llvm::Value*>* currentScope;
+    std::unique_ptr<std::unordered_map<std::string, std::unique_ptr<std::unordered_map<std::string, llvm::Value*>>>> localScopes;
 
     static VariableTable* instance;
 
     VariableTable(){
         globalScope = std::make_unique<std::unordered_map<std::string, llvm::Value*>>();
+        currentScope = nullptr;
+        localScopes = std::make_unique<std::unordered_map<std::string, std::unique_ptr<std::unordered_map<std::string, llvm::Value*>>>>();
     }
 
 public:
     static VariableTable& getInstance();
     virtual ~VariableTable() = default;
-    void enterScope();
+    void enterScope(std::string& name);
     void exitScope();
     void insertVariable(const std::string& name, llvm::Value* value);
     void setVariableValue(const std::string& name, llvm::Value* newValue);
