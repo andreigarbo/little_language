@@ -63,46 +63,50 @@ int main(int ac, char** argv) {
     LLVMState &llvmState = LLVMState::getInstance(); 
 
     for (auto& a : ast) {
-        std::cout<< typeid(*a).name() << std::endl;
+        // std::cout<< typeid(*a).name() << std::endl;
         a->codegen();
     }
 
-    std::cout << "Generated code\n";
+    std::cout << "\nGenerated code\n\n";
 
     llvmState.printModule();
     llvmState.printModuleToFile("interm.ll");
 
+    int ret;
+
+    ret = system("llc -filetype=obj interm.ll -o interm.o");
+    if (ret != 0) {
+        std::cerr << "Error generating object file" << std::endl;
+        std::remove("interm.ll");
+        return ret;
+    }
+
+    std::string baseFilename = filename.substr(0, filename.find_last_of('.'));
+    std::string clangCommand = "clang -no-pie interm.o -o" + baseFilename;
+
+    ret = system(clangCommand.c_str());
+    if (ret != 0) {
+        std::remove("interm.ll");
+        std::remove("interm.o");
+        std::cerr << "Linker error" << std::endl;
+        return ret;
+    }
+
+    std::remove("interm.ll");
+
+    std::remove("interm.o");
+
+    std::cout << "File " << filename << " compiled to executable ./" << baseFilename << std::endl;
+
     return 0;
 }
 
-// int main() {
-//     // Create a new LLVM context
-//     llvm::LLVMContext context;
+// USAGE
+// make
+// ./little_compiler test.lln
+// llc -filetype=obj test.ll -o output.o
+// clang output.o -o testex
+// USAGE
 
-//     // Create a new module
-//     std::unique_ptr<llvm::Module> module = std::make_unique<llvm::Module>("my_module", context);
-
-//     // // Create a function signature: int foo()
-//     llvm::FunctionType *funcType = llvm::FunctionType::get(llvm::Type::getInt32Ty(context), false);
-//     llvm::Function *fooFunc = llvm::Function::Create(funcType, llvm::Function::ExternalLinkage, "foo", module.get());
-
-//     // Create a basic block and add it to the function
-//     llvm::BasicBlock *entryBlock = llvm::BasicBlock::Create(context, "entry", fooFunc);
-
-//     // Create an IRBuilder and set its insertion point to the basic block
-//     llvm::IRBuilder<> builder(entryBlock);
-
-//     // Create an alloca instruction in the entry block of the function
-//     llvm::AllocaInst *allocaInst = builder.CreateAlloca(llvm::Type::getInt32Ty(context), nullptr, "myVariable");
-
-//     // Return 0
-//     builder.CreateRet(llvm::ConstantInt::get(llvm::Type::getInt32Ty(context), 0));
-
-//     // Verify the function
-//     // llvm::verifyFunction(*fooFunc);
-
-//     // Print the generated LLVM IR to the console
-//     module->print(llvm::outs(), nullptr);
-
-//     return 0;
-// }
+// Compile and execute pipeline
+// clear;make;./little_compiler test.lln;./test;echo Result is $?

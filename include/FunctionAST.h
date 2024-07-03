@@ -106,6 +106,25 @@ class FunctionPrototypeArgumentStringAST : public FunctionPrototypeArgumentAST {
         llvm::Value *codegen() override;
 };
 
+class FunctionPrototypeArgumentArrayAST : public FunctionPrototypeArgumentAST {
+    std::string name;
+    std::unique_ptr<ArrayAST> value;
+
+
+    public:
+        std::string arrayType;
+        int arraySize;
+        FunctionPrototypeArgumentArrayAST(
+            std::string name,
+            std::unique_ptr<ArrayAST> value,
+            std::string arrayType,
+            int arraySize
+        ) : FunctionPrototypeArgumentAST(name, std::move(value)), name(name), value(std::move(value)), arrayType(arrayType), arraySize(arraySize) {}
+        #include <memory>
+        virtual ~FunctionPrototypeArgumentArrayAST() = default;
+        llvm::Value *codegen() override;
+};
+
 class FunctionAST : public GenericAST {
     std::unique_ptr<FunctionPrototypeAST> prototype;
     std::vector<std::unique_ptr<GenericAST>> body;

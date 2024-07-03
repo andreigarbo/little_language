@@ -12,9 +12,10 @@ int Lexer::get_token(){
         identifier_string = last_char;
 
         //while characters read are in the above mentioned range
-        while(isalpha(last_char = file.get()) || last_char == '_'){
+        while (isalnum(last_char = file.get()) || last_char == '_') {
             //build string from the read characters
             identifier_string += last_char;
+
         }
 
         //return the found tokens
@@ -75,13 +76,16 @@ int Lexer::get_token(){
         else if(identifier_string == "void"){
             return token_void;
         }
+        else if(identifier_string == "iterate"){
+            return token_iterate;
+        }
 
         //if not a specially defined keyword, return token_identifier to signal a custom word (such as a variable name)
         return token_identifier; 
     }
 
     //for int numbers or float numbers, format 1.2345.....
-    else if (isdigit(last_char) || last_char == '.'){ 
+    else if (isdigit(last_char) || last_char == '.' || last_char == '-'){ 
         //variable that will store the characters as they are read
         std::string read_number;
 
@@ -185,7 +189,7 @@ int Lexer::get_token(){
         last_char = file.get();
         if (last_char == '\''){
             identifier_string = "";
-            return token_identifier;
+            return token_string_value;
         }
         identifier_string = last_char;
         last_char = file.get();
@@ -194,7 +198,7 @@ int Lexer::get_token(){
             last_char = file.get();
         }
         last_char = file.get();
-        return token_identifier;
+        return token_string_value;
     }
     else if (last_char == '\"'){
         last_char = file.get();
@@ -205,7 +209,7 @@ int Lexer::get_token(){
             last_char = file.get();
         }
         last_char = file.get();
-        return token_identifier;
+        return token_string_value;
     }
     //not consuming the EOF
     else if (last_char == EOF){

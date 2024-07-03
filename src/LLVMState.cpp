@@ -1,12 +1,17 @@
 #include "LLVMState.h"
 #include "ErrorPrototype.h"
 
+#include "llvm/Support/Host.h"
+
 LLVMState::LLVMState()
     : theContext(std::make_unique<llvm::LLVMContext>()),
       builder(std::make_unique<llvm::IRBuilder<>>(*theContext)),
       theModule(std::make_unique<llvm::Module>("MainModule", *theContext)),
       currentFunction(nullptr),
-      currentBasicBlock(nullptr) {}
+      currentBasicBlock(nullptr) {
+        llvm::Triple triple(llvm::sys::getProcessTriple());
+        theModule->setTargetTriple(triple.str());
+      }
 
 LLVMState& LLVMState::getInstance() {
     static LLVMState instance;

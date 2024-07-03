@@ -26,8 +26,7 @@ llvm::Value* VariableAST::codegen(){
             if (variableValue == nullptr){
                 return LogErrorValue(("rval reference to undefined variable " + name).c_str());
             }
-            //TODO: check the below, but do VariableTable first
-            llvm::Type* variableType = variableValue->getType()->getPointerElementType();;
+            llvm::Type* variableType = variableValue->getType()->getPointerElementType();
             return builder.CreateLoad(variableType, variableValue, "loadtmp");
         }
         else {
@@ -54,6 +53,9 @@ llvm::Value* VariableAST::codegen(){
                 allocatedVariable = CreateAllocaVar(&myModule, &(llvmState.getCurrentFunction()), llvm::Type::getInt8PtrTy(context), name);
         }
         if (value == nullptr){
+            if (type == token_array) {
+                return LogErrorValue("Arrays need to be initialized when created");
+            }
             //variable created but not initalized
             variableTable.insertVariable(name, allocatedVariable);
             return allocatedVariable;
@@ -64,9 +66,14 @@ llvm::Value* VariableAST::codegen(){
             if (!codegenValue){
                 return LogErrorValue(("Error during assignment of variable " + name).c_str());
             }
-            builder.CreateStore(codegenValue, allocatedVariable);
-            variableTable.insertVariable(name, allocatedVariable);
-            return allocatedVariable;
+            if (type != token_array) {
+                builder.CreateStore(codegenValue, allocatedVariable);
+                variableTable.insertVariable(name, allocatedVariable);
+                return allocatedVariable;
+            } else {
+                variableTable.insertVariable(name, codegenValue);
+                return codegenValue;
+            }
         }
     }
 }

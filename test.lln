@@ -1,0 +1,13 @@
+int func(int z) {
+    int x=(z+1);
+    return x;
+}
+
+int main() {
+    int x = 6;
+    int a;
+    float z = 6.5;
+    int g = (a + 3 * (2*(1)));
+    a = func(g);
+    return a;
+}

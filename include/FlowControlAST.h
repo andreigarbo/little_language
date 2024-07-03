@@ -34,7 +34,7 @@ class ForInAST : public GenericAST {
     public:
         ForInAST(
             std::string variableName,
-            std::unique_ptr<GenericAST> iterableName,
+            std::unique_ptr<GenericAST> iterable,
             std::vector<std::unique_ptr<GenericAST>> body
         ) : variableName(std::move(variableName)), iterable(std::move(iterable)), body(std::move(body)) {}
         virtual ~ForInAST() = default;

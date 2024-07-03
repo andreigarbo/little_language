@@ -12,6 +12,7 @@
 #include "FloatAST.h"
 #include "StringAST.h"
 #include "CharAST.h"
+#include "ArrayAccessAST.h"
 
 #include "BinaryExprAST.h"
 #include "FunctionAST.h"

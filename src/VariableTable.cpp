@@ -48,7 +48,6 @@ void VariableTable::setVariableValue(const std::string& name, llvm::Value* newVa
 llvm::Value* VariableTable::getVariableValue(const std::string& name){
     llvm::Value* varValue = (*currentScope)[name];
     if (varValue == nullptr) {
-        std::cout << "VARNULL\n";
         varValue = (*globalScope)[name];
         if (varValue == nullptr) {
             return nullptr;

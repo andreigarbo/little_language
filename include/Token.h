@@ -28,19 +28,20 @@ enum Token{
 
     //strings or numbers
     token_identifier = -19,
-    token_int_number = -20,
-    token_float_number = -21,
+    token_string_value = -20,
+    token_int_number = -21,
+    token_float_number = -22,
 
     //operators
-    token_le = -22,
-    token_ge = -23,
-    token_eq = -24,
-    token_ne = -25,
+    token_le = -23,
+    token_ge = -24,
+    token_eq = -25,
+    token_ne = -26,
 
     //misc
-    token_global = -26,
-    token_import = -27,
-    token_return = -28
+    token_global = -27,
+    token_import = -28,
+    token_return = -29
 };
 
 #endif

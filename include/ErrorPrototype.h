@@ -6,6 +6,7 @@
 
 static std::unique_ptr<GenericAST> LogError(const char *string){
     fprintf(stderr, "Error: %s\n", string);
+    exit(1);
     return nullptr;
 }
 

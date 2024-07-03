@@ -33,7 +33,7 @@ std::unique_ptr<FloatAST> Parser::ParseFloatExpr(){
 // }
 
 std::unique_ptr<StringAST> Parser::ParseStringExpr(){
-    if (current_token == token_identifier){
+    if (current_token == token_string_value){
         auto value = std::make_unique<StringAST>(identifier_string);
         get_next_token();
         return value;
@@ -131,6 +131,15 @@ std::unique_ptr<GenericAST> Parser::ParseTermExpr(){
                 auto functionCall = std::make_unique<FunctionCallAST>(std::move(variableName), std::move(argumentList));
                 return functionCall;
             } else {return LogErrorPrototypeFunctionPrototype("Expected ')' in end of function call");}
+        //meaning we have something like x = array[5];
+        } else if (current_token == '[') {
+            get_next_token();
+            auto array_index = ParseTermExpr();
+            if (current_token == ']') {
+                get_next_token();
+                auto arrayElementAccess = std::make_unique<ArrayAccessAST>(std::move(variableName), std::move(array_index), false, nullptr);
+                return arrayElementAccess;
+            } else {return LogErrorPrototype("Expected ']' after array index");}
         } else {
             return std::make_unique<VariableAST>(variableName, 0, nullptr);
             // return variableNameAST;
@@ -139,6 +148,10 @@ std::unique_ptr<GenericAST> Parser::ParseTermExpr(){
     else if (current_token == '['){
         auto array = ParseArrayExpr();
         return array;
+    }
+    else if (current_token == token_string_value) {
+        auto string_value = ParseStringExpr();
+        return string_value;
     }
     else {
         return LogErrorPrototype("Expected '(' or numeric symbol when parsing a term");
@@ -247,8 +260,13 @@ std::unique_ptr<GenericAST> Parser::ParseForStatementExpr() {
             std::string variableName = identifier_string;
             get_next_token();
             if (current_token == token_in) {
+                std::unique_ptr<GenericAST> iterable;
                 get_next_token();
-                auto iterable = ParseTermExpr(); // needed because maybe we have (for var in [1,2,3])
+                if (current_token == '[') {
+                    iterable = ParseArrayExpr(); // needed because maybe we have (for var in [1,2,3])
+                } else {
+                    iterable = ParseTermExpr();
+                }
                 if(current_token == ')') {
                     get_next_token();
                     auto body = ParseFunctionBodyExpr();
@@ -258,9 +276,15 @@ std::unique_ptr<GenericAST> Parser::ParseForStatementExpr() {
             } 
             else if (current_token == token_from) {
                 get_next_token();
+                if (current_token != token_int_number && current_token != token_identifier) {
+                    return LogErrorPrototype("Expected integer value as for range start");
+                }
                 auto fromValue = ParseTermExpr();
                 if (current_token == token_to){
                     get_next_token();
+                    if (current_token != token_int_number && current_token != token_identifier){
+                        return LogErrorPrototype("Expected integer value as for range start");
+                    }
                     auto toValue = ParseTermExpr();
                     int iterate = 1;
                     if (current_token == ','){
@@ -271,6 +295,7 @@ std::unique_ptr<GenericAST> Parser::ParseForStatementExpr() {
                                 get_next_token();
                                 if (current_token == token_int_number){
                                     iterate = numeric_value_int;
+                                    get_next_token();
                                 } else {return LogErrorPrototype("Expected integer value for 'iterate' parameter");}
                             } else {return LogErrorPrototype("Expected '=' after 'iterate' parameter");}
                         } else {return LogErrorPrototype("Valid parameters for 'for' loop are: iterate");}
@@ -280,8 +305,8 @@ std::unique_ptr<GenericAST> Parser::ParseForStatementExpr() {
                         auto body = ParseFunctionBodyExpr();
                         auto forRangeAST = std::make_unique<ForRangeAST>(std::move(variableName), std::move(fromValue), std::move(toValue), std::move(iterate), std::move(body)); 
                         return forRangeAST;
-                    }
-                }
+                    } else {return LogErrorPrototype("Expected ')' afer for loop definition");}
+                } else {return LogErrorPrototype("Expected 'to' keyword in for loop declaration");}
             } else {return LogErrorPrototype("Expected keyword 'in' or 'from' after first argument in iterator block");}
         } else {return LogErrorPrototype("Expected '(' in beginning of iterator block");}
     } else {return LogErrorPrototype("Expected 'for' in beginning of for loop");}
@@ -338,7 +363,6 @@ std::unique_ptr<GenericAST> Parser::ParseDeclarationOrAssignmentExpr(){
             get_next_token();
             //meaning that this variable declaration includes an assignment
             if (current_token == '='){
-                //maybe this is a function call on the right side. Not sure how to differentiate
                 get_next_token();
                 std::unique_ptr<GenericAST> rightSide = ParseTermExpr();
                 if (current_token != ';') {
@@ -383,7 +407,21 @@ std::unique_ptr<GenericAST> Parser::ParseDeclarationOrAssignmentExpr(){
         else {
             std::string name = identifier_string;
             get_next_token();
-            if (current_token == '='){
+            if (current_token == '[') {
+                get_next_token();
+                auto array_index = ParseTermExpr();
+                if (current_token == ']') {
+                    get_next_token();
+                    if (current_token == '=') {
+                        get_next_token();
+                        auto newValue = ParseTermExpr();
+                        get_next_token();
+                        auto arrayElementAccess = std::make_unique<ArrayAccessAST>(std::move(name), std::move(array_index), true, std::move(newValue));
+                        return arrayElementAccess;
+                    } else {return LogErrorPrototype("Expected rvalue in array cell assignment");}
+                } else {return LogErrorPrototype("Expected ']' after array index");}
+            }
+            else if (current_token == '='){
                 get_next_token();
                 std::unique_ptr<GenericAST> rightSide = ParseTermExpr();
                 if (current_token != ';') {
@@ -460,10 +498,36 @@ std::unique_ptr<GenericAST> Parser::ParseFunctionPrototypeArgumentExpr() {
                     auto argument = std::make_unique<FunctionPrototypeArgumentCharAST>(argumentName, std::move(value));
                     return argument; 
                 }
+                else if (argumentType == "array"){
+                    auto value = ParseArrayExpr();
+                    // auto argument = std::make_unique<FunctionPrototypeArgumentArrayAST>(argumentName, std::move(value));
+                    // return argument;
+                }
                 else{
+                    std::cout << argumentType << std::endl;
                     return LogErrorPrototype("Unexpected argument type");
                 }
             } else {
+                std::string arrayType = "none";
+                int arraySize = -1;
+                //paranthesis for array parameters
+                if (current_token == '(') {
+                    get_next_token();
+                    if(isTypeDeclaration(current_token)){
+                        arrayType = identifier_string;
+                        get_next_token();
+                        if (current_token == ','){
+                            get_next_token();
+                            if (current_token == token_int_number) {
+                                arraySize = numeric_value_int;
+                                get_next_token();
+                                if (current_token == ')') {
+                                    get_next_token();
+                                } else {return LogErrorPrototype("Expected ')' after parameters for array parameter");}
+                            } else {return LogErrorPrototype("Expected integer value for array parameter size");}
+                        } else {return LogErrorPrototype("Expected ',' after type declaration for array parameter");}
+                    } else {return LogErrorPrototype("Expected type as first argument of array parameter");}
+                }
                 if (argumentType == "int"){
                     auto argument = std::make_unique<FunctionPrototypeArgumentIntAST>(argumentName, nullptr);
                     return argument;
@@ -478,6 +542,14 @@ std::unique_ptr<GenericAST> Parser::ParseFunctionPrototypeArgumentExpr() {
                 }
                 else if (argumentType == "char") {
                     auto argument = std::make_unique<FunctionPrototypeArgumentCharAST>(argumentName, nullptr);
+                    return argument;
+                }
+                else if (argumentType == "array") {
+                    std::cout << arrayType << " "  << arraySize << std::endl;
+                    if (arrayType == "none" || arraySize == -1) {
+                        return LogErrorPrototype("Invalid or no parameters provided for array argument");
+                    }
+                    auto argument = std::make_unique<FunctionPrototypeArgumentArrayAST>(argumentName, nullptr, arrayType, arraySize);
                     return argument;
                 }
                 else {
