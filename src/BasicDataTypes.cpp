@@ -77,7 +77,6 @@ llvm::Value* ArrayAST::codegen() {
     }
 
     return arrayAlloc;
-
 }
 
 llvm::Value* ArrayAccessAST::codegen() {
@@ -110,7 +109,6 @@ llvm::Value* ArrayAccessAST::codegen() {
     }
 
 }
-
 
 //TODO
 llvm::Value* CharAST::codegen() {

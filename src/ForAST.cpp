@@ -44,8 +44,6 @@ llvm::Value* ForInAST::codegen() {
         return LogErrorValue("Failed to generate code for iterable in for loop");
     }
 
-    std::cout<<"here\n";
-
     llvm::AllocaInst* allocInstIterable = llvm::dyn_cast<llvm::AllocaInst>(iterableCodegen);
     if (!allocInstIterable) {
         return LogErrorValue("Failed to generate code for iterable in for loop");
@@ -109,7 +107,7 @@ llvm::Value* ForInAST::codegen() {
 
     for (auto& expression : body) {
         if (!expression->codegen()){
-            return LogErrorValue("Error generating code for body of while loop");
+            return LogErrorValue("Error generating code for body of for loop");
         }
     }
 
@@ -188,7 +186,7 @@ llvm::Value* ForRangeAST::codegen() {
 
     for (auto& expression : body) {
         if (!expression->codegen()){
-            return LogErrorValue("Error generating code for body of while loop");
+            return LogErrorValue("Error generating code for body of for loop");
         }
     }
     

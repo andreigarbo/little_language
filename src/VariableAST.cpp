@@ -27,6 +27,12 @@ llvm::Value* VariableAST::codegen(){
                 return LogErrorValue(("rval reference to undefined variable " + name).c_str());
             }
             llvm::Type* variableType = variableValue->getType()->getPointerElementType();
+
+            if (llvm::ArrayType* arrayType = llvm::dyn_cast<llvm::ArrayType>(variableType)) {
+                return variableValue;
+
+            }
+
             return builder.CreateLoad(variableType, variableValue, "loadtmp");
         }
         else {
@@ -60,7 +66,7 @@ llvm::Value* VariableAST::codegen(){
             variableTable.insertVariable(name, allocatedVariable);
             return allocatedVariable;
         }
-        else{                    
+        else{
             //variable create and initialized
             llvm::Value* codegenValue = value->codegen();
             if (!codegenValue){
@@ -71,6 +77,7 @@ llvm::Value* VariableAST::codegen(){
                 variableTable.insertVariable(name, allocatedVariable);
                 return allocatedVariable;
             } else {
+                // builder.CreateStore(codegenValue, allocatedVariable);
                 variableTable.insertVariable(name, codegenValue);
                 return codegenValue;
             }

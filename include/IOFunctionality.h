@@ -11,7 +11,9 @@ public:
 class InputGenerator {
 public:
     void generateInputFunction();
-    void generateScanfFunction();
+    void generateInputInt();
+    void generateInputFloat();
+    void generateInputString();
 };
 
 #endif

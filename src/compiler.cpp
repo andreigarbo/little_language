@@ -71,7 +71,10 @@ int main(int ac, char** argv) {
     printGenerator.generatePrintFunction();
     printGenerator.generatePrintInt();
     printGenerator.generatePrintFloat();
-    inputGenerator.generateInputFunction();
+    inputGenerator.generateInputInt();
+    inputGenerator.generateInputFloat();
+    inputGenerator.generateInputString();
+   
 
 
     Parser parser(filename);

@@ -153,8 +153,11 @@ void PrintGenerator::generatePrintFunction() {
     Module& module = llvmState.getModule();
 
     //basically imports printf, it links with it
-    FunctionType *printfFuncType = FunctionType::get(builder.getInt32Ty(), {builder.getInt8PtrTy()}, true);
-    Function *printfFunc = Function::Create(printfFuncType, Function::ExternalLinkage, "printf", module);
+    Function *printfFunc = module.getFunction("sprintf");
+    if (!printfFunc) {
+        FunctionType *printfFuncType = FunctionType::get(builder.getInt32Ty(), {builder.getInt8PtrTy()}, true);
+        printfFunc = Function::Create(printfFuncType, Function::ExternalLinkage, "printf", module);
+    }
 
     //creates print_string
     FunctionType* printFunctionType = FunctionType::get(builder.getVoidTy(), {builder.getInt8PtrTy()}, true);
@@ -178,55 +181,136 @@ void PrintGenerator::generatePrintFunction() {
     builder.CreateRetVoid();
 }
 
+void InputGenerator::generateInputInt() {
+    LLVMState& llvmState = LLVMState::getInstance();
+    IRBuilder<>& builder = llvmState.getBuilder();
+    LLVMContext& context = llvmState.getContext();
+    Module& module = llvmState.getModule();
 
-void InputGenerator::generateInputFunction() {
-    LLVMState& state = LLVMState::getInstance();
-    IRBuilder<>& builder = state.getBuilder();
-    Module& module = state.getModule();
-
-    // Define the type for the input function (assuming i32 input() signature)
-    FunctionType* inputFuncType = FunctionType::get(builder.getInt32Ty(), false);
-
-    // Insert or get the input function
-    Function* inputFunc = module.getFunction("input");
-    if (!inputFunc) {
-        inputFunc = Function::Create(inputFuncType, Function::ExternalLinkage, "input", module);
-    }
-
-    // Begin building the function
-    BasicBlock* entry = BasicBlock::Create(module.getContext(), "entry", inputFunc);
-    builder.SetInsertPoint(entry);
-
-    // Input function implementation goes here
-    // Example: use IRBuilder to create instructions
-
-    // End the function
-    builder.CreateRet(builder.getInt32(0)); // Dummy return value for example
-}
-
-void InputGenerator::generateScanfFunction() {
-    LLVMState& state = LLVMState::getInstance();
-    IRBuilder<>& builder = state.getBuilder();
-    Module& module = state.getModule();
-
-    // Define the type for the scanf function (assuming i32 scanf(i8*) signature)
-    Type* Int32Ty = builder.getInt32Ty();
-    Type* Int8PtrTy = builder.getInt8PtrTy();
-    FunctionType* scanfFuncType = FunctionType::get(Int32Ty, {Int8PtrTy}, true);
-
-    // Insert or get the scanf function
-    Function* scanfFunc = module.getFunction("scanf");
+    //get C function scanf
+    Function *scanfFunc = module.getFunction("scanf");
     if (!scanfFunc) {
+        FunctionType *scanfFuncType = FunctionType::get(builder.getInt32Ty(), {builder.getInt8PtrTy()}, true);
         scanfFunc = Function::Create(scanfFuncType, Function::ExternalLinkage, "scanf", module);
     }
 
-    // Begin building the function
-    BasicBlock* entry = BasicBlock::Create(module.getContext(), "entry", scanfFunc);
-    builder.SetInsertPoint(entry);
+    //create our input_int function
+    FunctionType *inputIntType = FunctionType::get(builder.getInt32Ty(), {}, true);
+    Function *inputIntFunc = Function::Create(inputIntType, Function::ExternalLinkage, "read_int", module);
 
-    // Scanf function implementation goes here
-    // Example: use IRBuilder to create instructions
+    //creates a basic block to insert
+    BasicBlock *entryBB = BasicBlock::Create(context, "entry", inputIntFunc);
+    builder.SetInsertPoint(entryBB);
 
-    // End the function
-    builder.CreateRet(builder.getInt32(0)); // Dummy return value for example
+    //allocates space for the int to be read
+    llvm::Value* readValueAlloca = builder.CreateAlloca(builder.getInt32Ty(), nullptr, "read_value_alloca");
+
+    //the format string
+    llvm::Value* stringFormatStr = builder.CreateGlobalStringPtr("%d");
+
+    //emits a call to scanf
+    builder.CreateCall(module.getFunction("scanf"), {stringFormatStr, readValueAlloca});
+
+    //loads the value from the readValueAlloca pointer
+    llvm::Value* readValue = builder.CreateLoad(builder.getInt32Ty(), readValueAlloca, "read_value");
+
+    //returns the value read from keyboard
+    builder.CreateRet(readValue);
+}
+
+void InputGenerator::generateInputFloat() {
+    LLVMState& llvmState = LLVMState::getInstance();
+    IRBuilder<>& builder = llvmState.getBuilder();
+    LLVMContext& context = llvmState.getContext();
+    Module& module = llvmState.getModule();
+
+    //get C function scanf
+    Function *scanfFunc = module.getFunction("scanf");
+    if (!scanfFunc) {
+        FunctionType *scanfFuncType = FunctionType::get(builder.getInt32Ty(), {builder.getInt8PtrTy()}, true);
+        scanfFunc = Function::Create(scanfFuncType, Function::ExternalLinkage, "scanf", module);
+    }
+
+    //create our input_int function
+    FunctionType *inputFloatType = FunctionType::get(builder.getFloatTy(), {}, true);
+    Function *inputFloatFunc = Function::Create(inputFloatType, Function::ExternalLinkage, "read_float", module);
+
+    //creates a basic block to insert
+    BasicBlock *entryBB = BasicBlock::Create(context, "entry", inputFloatFunc);
+    builder.SetInsertPoint(entryBB);
+
+    //allocates space for the float to be read
+    llvm::Value* readValueAlloca = builder.CreateAlloca(builder.getFloatTy(), nullptr, "read_value_alloca");
+
+    //the format string
+    llvm::Value* stringFormatStr = builder.CreateGlobalStringPtr("%f");
+
+    //emits a call to scanf
+    builder.CreateCall(module.getFunction("scanf"), {stringFormatStr, readValueAlloca});
+
+    //loads the value from the readValueAlloca pointer
+    llvm::Value* readValue = builder.CreateLoad(builder.getFloatTy(), readValueAlloca, "read_value");
+
+    //returns the value read from keyboard
+    builder.CreateRet(readValue);
+}
+
+void InputGenerator::generateInputString() {
+    LLVMState& llvmState = LLVMState::getInstance();
+    IRBuilder<>& builder = llvmState.getBuilder();
+    LLVMContext& context = llvmState.getContext();
+    Module& module = llvmState.getModule();
+
+    //get C function scanf
+    Function *scanfFunc = module.getFunction("scanf");
+    if (!scanfFunc) {
+        FunctionType *scanfFuncType = FunctionType::get(builder.getInt8PtrTy(), {}, true);
+        scanfFunc = Function::Create(scanfFuncType, Function::ExternalLinkage, "scanf", module);
+    }
+
+    //get C function strlen
+    Function *strlenFunc = module.getFunction("strlen");
+    if (!strlenFunc) {
+        FunctionType *strlenFuncType = FunctionType::get(builder.getInt32Ty(), {builder.getInt8PtrTy()}, false);
+        strlenFunc = Function::Create(strlenFuncType, Function::ExternalLinkage, "strlen", module);
+    }
+
+    //create our input_int function
+    FunctionType *inputStringType = FunctionType::get(builder.getInt8PtrTy(), {}, true);
+    Function *inputStringFunc = Function::Create(inputStringType, Function::ExternalLinkage, "read_string", module);
+
+    //creates a basic block to insert
+    BasicBlock *entryBB = BasicBlock::Create(context, "entry", inputStringFunc);
+    builder.SetInsertPoint(entryBB);
+
+    //defines a type for the buffer
+    llvm::Type *bufferType = llvm::ArrayType::get(builder.getInt8Ty(), 1024);
+
+    //allocates a buffer of the defined type
+    llvm::Value *buffer = builder.CreateAlloca(bufferType, nullptr, "read_value_buffer");
+
+    //get pointer to buffer
+    llvm::Value *bufferPtr = builder.CreateGEP(bufferType, buffer, {builder.getInt32(0), builder.getInt32(0)});
+    // llvm::Value *formatStrPtr = builder.CreateGEP(formatStrGlobal->getValueType(), formatStrGlobal, {builder.getInt32(0), builder.getInt32(0)});
+
+    //the format string
+    llvm::Value* stringFormatStr = builder.CreateGlobalStringPtr("%[^\n]");
+
+    //emits a call to scanf
+    builder.CreateCall(scanfFunc, {stringFormatStr, bufferPtr});
+
+    //emits a call to strlen to find length of string
+    llvm::Value *strlenResult = builder.CreateCall(strlenFunc, {bufferPtr}, "strlen_result");
+
+    //adding 1 for the null terminator
+    llvm::Value *strlenWithNull = builder.CreateAdd(strlenResult, builder.getInt32(1));
+
+    //creates new buffer to size of the read string
+    llvm::Value *exactSizeBuffer = builder.CreateAlloca(builder.getInt8Ty(), strlenWithNull, "exact_size_buffer");
+
+    //copies to appropriately sized buffer
+    builder.CreateMemCpy(exactSizeBuffer, llvm::MaybeAlign(1), bufferPtr, llvm::MaybeAlign(1), strlenWithNull);
+
+    //returns pointer to appropriately sized buffer
+    builder.CreateRet(exactSizeBuffer);
 }
