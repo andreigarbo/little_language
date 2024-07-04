@@ -70,7 +70,7 @@ int main(int ac, char** argv) {
 
     printGenerator.generatePrintFunction();
     printGenerator.generatePrintInt();
-    // printGenerator.generatePrintFloat();
+    printGenerator.generatePrintFloat();
     inputGenerator.generateInputFunction();
 
 
