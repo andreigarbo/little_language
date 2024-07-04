@@ -1,5 +1,6 @@
     #include "FunctionAST.h"
     #include "ErrorPrototype.h"
+    #include "Utils.h"
 
     #include <iostream>
 
@@ -146,6 +147,8 @@
             //if no return and not void, return an error
             if (!returnType->isVoidTy()){
                 return LogErrorValue("Expected explicit return statement for non-void function");
+            } else {
+                builder.CreateRetVoid();
             }
         }
 
@@ -204,8 +207,12 @@
             codegenArgValues.push_back(codegenArgValue);
         }
 
-        //return the function call
-        return builder.CreateCall(function, codegenArgValues, "calltmp");
+        //return function call, assign it to temp var if non void
+        if (function->getReturnType()->isVoidTy()) {
+            return builder.CreateCall(function, codegenArgValues);
+        } else {
+            return builder.CreateCall(function, codegenArgValues, "calltmp");
+        }
     }
 
     llvm::Value* FunctionPrototypeArgumentAST::codegen(){

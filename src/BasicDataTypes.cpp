@@ -58,8 +58,6 @@ llvm::Value* ArrayAST::codegen() {
         return LogErrorValue("Arrays need to have at least one element");
     }
 
-    // llvm::PointerType *elementPtrType = llvm::PointerType::get(elementType, 0);
-    // llvm::ArrayType *arrayType = llvm::ArrayType::get(elementPtrType, value.size());
     llvm::ArrayType *arrayType = llvm::ArrayType::get(elementType, value.size());
     llvm::Value *arrayAlloc = builder.CreateAlloca(arrayType, nullptr, "array_alloc");
 
@@ -74,47 +72,13 @@ llvm::Value* ArrayAST::codegen() {
             return LogErrorValue("Expected all array elements to have the same type");
         }
 
-        // llvm::Value* elementAlloc = builder.CreateAlloca(currentElementValue->getType(), nullptr, "element_alloc");
-        // builder.CreateStore(currentElementValue, elementAlloc);
-
-        // llvm::Value* elementPointer = builder.CreateGEP(arrayType, arrayAlloc, {builder.getInt32(0), builder.getInt32(i)});
-        // builder.CreateStore(elementAlloc, elementPointer);
-
         llvm::Value* elementPointer = builder.CreateGEP(arrayType, arrayAlloc, {builder.getInt32(0), builder.getInt32(i)});
-        // llvm::Value* pointerToElement = builder.CreateLoad(elementPointer->getType()->getPointerElementType(), elementPointer);
         builder.CreateStore(currentElementValue, elementPointer);
     }
 
     return arrayAlloc;
 
 }
-
-// llvm::Value* ArrayAccessAST::codegen() {
-//     LLVMState& llvmState = LLVMState::getInstance();
-//     llvm::LLVMContext& context = llvmState.getContext();
-//     llvm::IRBuilder<>& builder = llvmState.getBuilder();
-//     llvm::Module& myModule = llvmState.getModule();
-
-//     VariableTable& variableTable = VariableTable::getInstance();
-
-//     if (!variableTable.getVariableValue(array_name)){
-//         return LogErrorValue(("Array " + array_name + " does not exist or not initialized").c_str());
-//     }
-
-//     llvm::Value* arrayAlloc = variableTable.getVariableValue(array_name);
-//     llvm::ArrayType* arrayType = llvm::cast<llvm::ArrayType>(arrayAlloc->getType()->getPointerElementType());
-
-//     llvm::Value* elementPointerPtr = builder.CreateGEP(arrayType, arrayAlloc, {builder.getInt32(0), builder.getInt32(array_index)});
-//     llvm::Value* elementPointer = builder.CreateLoad(elementPointerPtr->getType()->getPointerElementType(), elementPointerPtr);
-
-//     if (store){
-//         llvm::Value* codegenValue = value->codegen();
-//         return builder.CreateStore(codegenValue, elementPointer);
-//     } else {
-//         llvm::Value* loadedValue = builder.CreateLoad(elementPointer->getType()->getPointerElementType(), elementPointer);
-//         return loadedValue;
-//     }
-// }
 
 llvm::Value* ArrayAccessAST::codegen() {
     LLVMState& llvmState = LLVMState::getInstance();

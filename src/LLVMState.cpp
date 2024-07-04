@@ -1,6 +1,8 @@
 #include "LLVMState.h"
 #include "ErrorPrototype.h"
 
+#include <iostream>
+
 #include "llvm/Support/Host.h"
 
 LLVMState::LLVMState()

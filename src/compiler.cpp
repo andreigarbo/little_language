@@ -16,6 +16,8 @@
 #include <llvm/IR/Module.h>
 #include <llvm/IR/Value.h>
 
+#include "IOFunctionality.h"
+
 #include "GenericAST.h"
 
 #include "IntAST.h"
@@ -39,6 +41,8 @@
 #include "Parser.h"
 
 
+
+
 int main(int ac, char** argv) {
 
     if (ac != 2) {
@@ -55,12 +59,23 @@ int main(int ac, char** argv) {
         return -1;
     }
 
-    Parser parser(filename);
-    auto ast = parser.ParseFile();
-
     std::cout << "Parsed file " + filename + "\n";
 
-    LLVMState &llvmState = LLVMState::getInstance(); 
+    LLVMState &llvmState = LLVMState::getInstance();
+
+    //generating IR for IO
+    
+    PrintGenerator printGenerator;
+    InputGenerator inputGenerator;
+
+    printGenerator.generatePrintFunction();
+    printGenerator.generatePrintInt();
+    // printGenerator.generatePrintFloat();
+    inputGenerator.generateInputFunction();
+
+
+    Parser parser(filename);
+    auto ast = parser.ParseFile();
 
     for (auto& a : ast) {
         // std::cout<< typeid(*a).name() << std::endl;

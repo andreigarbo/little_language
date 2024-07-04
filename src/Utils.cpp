@@ -1,5 +1,6 @@
 #include "Utils.h"
 #include "ErrorPrototype.h"
+#include "LLVMState.h"
 
 #include <iostream>
 
@@ -26,4 +27,3 @@ llvm::Value *CreateAllocaVar(llvm::Module* module, llvm::Function *currentFuncti
         return new llvm::GlobalVariable(*module, variableType, false, llvm::GlobalValue::ExternalLinkage, nullptr, VarName);
     }
 }
-
