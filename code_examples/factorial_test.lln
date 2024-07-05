@@ -1,0 +1,15 @@
+int factorial(int n) {
+    if (n <= 1) {
+        return 1;
+    }
+    return (n * factorial((n-1)));
+}
+
+int main () {
+    print_string("Input number to calculate factorial");
+    int num = read_int();
+    int fac = factorial(num);
+    print_string("Factorial is");
+    print_int(fac);
+    return 0;
+}

@@ -39,8 +39,18 @@ llvm::Value* VariableAST::codegen(){
             //assignment, variable is on left side and value is on right
             llvm::Value* newValue = value->codegen();
             llvm::Value* existingVariablePointer = variableTable.getVariableValue(name);
+
+            //verfiy that variable exists
             if (!existingVariablePointer) {
                 return LogErrorValue(("lval reference to undefined variable " + name).c_str());
+            }
+
+            //verify that types match for both sides
+            llvm::Type* existingVariableType = existingVariablePointer->getType()->getPointerElementType();
+            llvm::Type* newValueType = newValue->getType();
+
+            if (existingVariableType != newValueType) {
+                return LogErrorValue(("Type mismatch on variable " + name + " assignment").c_str());
             }
             builder.CreateStore(newValue, existingVariablePointer);
             return existingVariablePointer;
@@ -72,7 +82,15 @@ llvm::Value* VariableAST::codegen(){
             if (!codegenValue){
                 return LogErrorValue(("Error during assignment of variable " + name).c_str());
             }
+
             if (type != token_array) {
+                //verify that types match for both sides
+                llvm::Type* existingVariableType = allocatedVariable->getType()->getPointerElementType();
+                llvm::Type* newValueType = codegenValue->getType();
+
+                if (existingVariableType != newValueType) {
+                    return LogErrorValue(("Type mismatch on variable " + name + " assignment").c_str());
+                }
                 builder.CreateStore(codegenValue, allocatedVariable);
                 variableTable.insertVariable(name, allocatedVariable);
                 return allocatedVariable;

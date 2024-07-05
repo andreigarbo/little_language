@@ -11,11 +11,6 @@
 #include <stack>
 #include <unordered_map>
 
-#include <llvm/IR/IRBuilder.h>
-#include <llvm/IR/LLVMContext.h>
-#include <llvm/IR/Module.h>
-#include <llvm/IR/Value.h>
-
 #include "IOFunctionality.h"
 
 #include "GenericAST.h"
@@ -39,8 +34,6 @@
 
 #include "Lexer.h"
 #include "Parser.h"
-
-
 
 
 int main(int ac, char** argv) {
@@ -75,8 +68,6 @@ int main(int ac, char** argv) {
     inputGenerator.generateInputFloat();
     inputGenerator.generateInputString();
    
-
-
     Parser parser(filename);
     auto ast = parser.ParseFile();
 
@@ -88,6 +79,7 @@ int main(int ac, char** argv) {
     std::cout << "\nGenerated code\n\n";
 
     llvmState.printModule();
+
     llvmState.printModuleToFile("interm.ll");
 
     int ret;

@@ -55,6 +55,8 @@ llvm::Value* BinaryExprAST::codegen(){
                 return builder.CreateMul(leftInt, rightInt, "multmp");
             case '/':
                 return builder.CreateSDiv(leftInt, rightInt, "divtmp");
+            case '%':
+                return builder.CreateSRem(leftInt, rightInt, "modtmp");
             case '<':
                 return builder.CreateICmpSLT(leftInt, rightInt, "cmptmp");
             case '>':
@@ -82,6 +84,8 @@ llvm::Value* BinaryExprAST::codegen(){
                 return builder.CreateFMul(leftFloat, rightFloat, "multmp");
             case '/':
                 return builder.CreateFDiv(leftFloat, rightFloat, "divtmp");
+            case '%':
+                return builder.CreateFRem(leftFloat, rightFloat, "modtmp");
             case '<':
                 return builder.CreateFCmpULT(leftFloat, rightFloat, "cmptmp");
             case '>':

@@ -27,6 +27,7 @@ public:
     double numeric_value_float;
     int numeric_value_int;
     std::string identifier_string;
+    int prev_token = -100;
 };
 
 #endif

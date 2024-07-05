@@ -58,15 +58,15 @@ llvm::Value* ForInAST::codegen() {
     llvm::Type* arrayElementType = arrayType->getElementType();
     //check if array type
     if (arrayType) {
-        llvm::Type* elementType = arrayType->getElementType();
+        // llvm::Type* elementType = arrayType->getElementType();
 
-        if (elementType->isIntegerTy()) {
-            llvm::errs() << "Array element type is an integer.\n";
-        } else if (elementType->isFloatTy()) {
-            llvm::errs() << "Array element type is a float.\n";
-        } else if (elementType->isPointerTy() && elementType->getPointerElementType()->isIntegerTy(8)) {
-            llvm::errs() << "Array element type is a string.\n";
-        }
+        // if (elementType->isIntegerTy()) {
+        //     llvm::errs() << "Array element type is an integer.\n";
+        // } else if (elementType->isFloatTy()) {
+        //     llvm::errs() << "Array element type is a float.\n";
+        // } else if (elementType->isPointerTy() && elementType->getPointerElementType()->isIntegerTy(8)) {
+        //     llvm::errs() << "Array element type is a string.\n";
+        // }
     } else {return LogErrorValue("Expected iterable to be an array type in for loop");}
 
 
@@ -80,7 +80,7 @@ llvm::Value* ForInAST::codegen() {
 
     builder.SetInsertPoint(conditionBasicBlock);
 
-     //loads the loop variable
+    //loads the loop variable
     llvm::Value* currentVal = builder.CreateLoad(llvm::Type::getInt32Ty(context), iteratorVar, "iteratorvar");
     //creates comparison between loop variable and end variable
     llvm::Value* endCond = builder.CreateICmpSLT(currentVal, arrayLengthCodegen, "loopcond");

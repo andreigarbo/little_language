@@ -54,8 +54,9 @@
                 }
 
                 llvm::ArrayType* arrayType = llvm::ArrayType::get(elementType, arrayArg->arraySize);
+                llvm::PointerType* arrayPointerType = llvm::PointerType::get(arrayType, 0);
 
-                argumentTypeObjects.push_back(arrayType);
+                argumentTypeObjects.push_back(arrayPointerType);
 
             } else {
                 return LogErrorValue(("Unknown argument type for function " + name).c_str());
@@ -92,7 +93,6 @@
 
         VariableTable& variableTable = VariableTable::getInstance();
         
-
         //codegening the function prototype
         llvm::Function* function = llvm::dyn_cast<llvm::Function>(prototype->codegen());
         if (!function) {
@@ -115,11 +115,41 @@
         for (auto& arg : function->args()) {
             llvm::Type* argType = arg.getType();
             std::string argName = arg.getName().str();
+            //this condition is true only for arrays, which need to be passed by value not reference
+            //secondary condition because strings are also pointers
+            if (argType->isPointerTy() && argType->getPointerElementType() != llvm::Type::getInt8Ty(context)) {
+                //get the type of the elements in the array
+                llvm::Type* elementType = argType->getPointerElementType();
 
-            llvm::Value* allocatedVariable = CreateAllocaVar(&myModule, function, argType, argName);
-            //llvm::Value* argValue = &arg;
-            builder.CreateStore(&arg, allocatedVariable);
-            variableTable.insertVariable(argName, allocatedVariable);
+                //get the array type
+                if (llvm::ArrayType* arrayType = llvm::dyn_cast<llvm::ArrayType>(elementType)) {
+
+                    //allocate array as internal variable of the function
+                    llvm::Value* arrayAlloc = CreateAllocaVar(&myModule, function, arrayType, argName + "_array");
+
+                    //iterate array elements
+                    for (unsigned i = 0; i < arrayType->getNumElements(); ++i) {
+                        //get pointer to element in original array
+                        llvm::Value* elementPtr = builder.CreateGEP(arrayType, &arg, {builder.getInt32(0), builder.getInt32(i)}, "elementPtr");
+
+                        //load its value
+                        llvm::Value* element = builder.CreateLoad(arrayType->getElementType(), elementPtr, "element");
+
+                        //get pointer to element in new array
+                        llvm::Value* newElementPtr = builder.CreateGEP(arrayType, arrayAlloc, {builder.getInt32(0), builder.getInt32(i)}, "newElementPtr");
+
+                        //store the value in new array
+                        builder.CreateStore(element, newElementPtr);
+                    }
+
+                    //insert new array in variable table
+                    variableTable.insertVariable(argName, arrayAlloc);
+                }
+            } else {
+                llvm::Value* allocatedVariable = CreateAllocaVar(&myModule, function, argType, argName);
+                builder.CreateStore(&arg, allocatedVariable);
+                variableTable.insertVariable(argName, allocatedVariable);
+            }
 
         }
 
@@ -155,8 +185,10 @@
         variableTable.exitScope();
         
 
-        //llvm function verifier
-        llvm::verifyFunction(*function);
+        // // llvm function verifier
+        // if (llvm::verifyFunction(*function)) {
+        //     return LogErrorValue("Function verification failed");
+        // }
 
         return function;
         // return nullptr;

@@ -86,6 +86,7 @@ std::unique_ptr<GenericAST> Parser::ParseTermExpr(){
             return AddSubExpr;
         }
         else{
+            std::cout << numeric_value_int<<std::endl;
             return LogErrorPrototype("Expected ')'");
         }
     }
@@ -177,7 +178,8 @@ std::unique_ptr<GenericAST> Parser::ParseMulDivExpr(){
 //made up of two MDE with an operator between them
 std::unique_ptr<GenericAST> Parser::ParseAddSubExpr(){
     std::unique_ptr<GenericAST> TermAddSub1 = ParseMulDivExpr();
-    while (current_token == '+' || current_token == '-'){
+    while (current_token == '+' || current_token == '-' || (current_token == token_int_number && numeric_value_int < 0) || (current_token == token_float_number && numeric_value_float < 0.0)){
+        // std::cout << current_token <<std::endl;
         char op = current_token;
         get_next_token();
         std::unique_ptr<GenericAST> TermAddSub2 = ParseMulDivExpr();
