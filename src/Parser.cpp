@@ -245,6 +245,9 @@ std::unique_ptr<DoWhileAST> Parser::ParseDoWhileStatementExpr(){
                 auto condition = ParseConditionExpr();
                 if (current_token == ')') {
                     get_next_token();
+                    if (current_token == ';') {
+                        get_next_token();
+                    } else {return LogErrorPrototypeDoWhile("Expected ';' after do...while statement");}
                     std::unique_ptr<DoWhileAST> doWhileStatement;
                     doWhileStatement = std::make_unique<DoWhileAST>(std::move(condition), std::move(body));
                     return doWhileStatement;

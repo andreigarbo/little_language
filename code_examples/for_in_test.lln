@@ -1,0 +1,14 @@
+int main() {
+    print_string("Accessing inline array elements");
+    for (var in [1,2,3,4,5]) {
+        print_int(var);
+        print_int((2*var));
+    }
+    array ai = [6,7,8,9];
+    print_string("Accessing variable array elements");
+    for (var in ai) {
+        print_int(var);
+        print_int((2*var));
+    }
+    return 0;
+}

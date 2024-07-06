@@ -1,0 +1,18 @@
+int main () {
+    print_string("Input a string");
+    string s = read_string();
+    print_string("You input");
+    print_string(s);
+
+    print_string("Input an integer value");
+    int i = read_int();
+    print_string("You input");
+    print_int(i);
+
+    print_string("Input a float value");
+    float f = read_float();
+    print_string("You input");
+    print_float(f);
+
+    return 0;
+}

@@ -1,0 +1,11 @@
+int main() {
+    print_string("Input a number. It will be printed back if lower than 5");
+    print_string("Else, the double will be printed");
+    int k = read_int();
+    if (k < 5) {
+        print_int(k);
+    } else {
+        print_int((2*k));
+    }
+    return 0;
+}

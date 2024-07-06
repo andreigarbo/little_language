@@ -1,0 +1,26 @@
+int main() {
+    print_string("Testing int array operations");
+    int it = 9;
+    array ai = [1,2,3,4,5,it];
+    print_int(ai[0]);
+    print_int(ai[3]);
+    print_int(ai[5]);
+    int k = ai[0];
+    ai[0] = ai[4];
+    ai[4] = k;
+    print_int(ai[0]);
+    print_int(ai[4]);
+
+    print_string("Testing float array operations");
+    float ft = 9.9;
+    array af = [1.2, 2.34, 4.52, 3.71, ft];
+    print_float(af[0]);
+    print_float(af[2]);
+    print_float(af[4]);
+    float f = af[0];
+    af[0] = af[3];
+    af[3] = f;
+    print_float(af[0]);
+    print_float(af[3]);
+    return 0;
+}

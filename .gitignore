@@ -3,3 +3,5 @@ ninja/
 lexer
 parser
 build
+code_examples/*
+!code_examples/*.*

@@ -1,0 +1,21 @@
+int main() {
+    int k = 0;
+    while (k < 10) {
+        k = (k + 1);
+        print_int(k);
+    }
+    while (k <= 10) {
+        k = (k + 1);
+        print_int(k);
+    }
+    while (1 != 1) {
+        print_string("This should not print");
+    }
+    k = 0;
+    int z = 5;
+    while (k != z) {
+        k = (k + 1);
+    }
+    print_int(k);
+    return 0;
+}

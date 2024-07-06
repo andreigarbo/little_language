@@ -1,0 +1,43 @@
+float ffunc(float x) {
+    x = (2.0*x);
+    return x;
+}
+
+int ifunc(int x) {
+    x = (2*x);
+    return x;
+}
+
+int array_sum_int(array x(int, 5)) {
+    int sum = 0;
+    for (val in x) {
+        sum = (sum + val);
+    }
+    return sum;
+}
+
+float array_sum_float(array x(float, 5)) {
+    float sum = 0.0;
+    for (val in x) {
+        sum = (sum + val);
+    }
+    return sum;
+}
+
+string helloworld() {
+    return "Hello world!";
+}
+
+int main() {
+    int x = 5;
+    float f = 4.2;
+    print_int(ifunc(x));
+    print_float(ffunc(f));
+    string hw = helloworld();
+    print_string(hw);
+    array si = [1,2,3,4,5];
+    array sf = [1.2, 2.3, 5.7, 21.4, 9.9];
+    print_int(array_sum_int(si));
+    print_float(array_sum_float(sf));
+    return 0;
+}

@@ -1,0 +1,27 @@
+int main() {
+    print_string("Testing for range");
+    for (i from 1 to 10) {
+        print_int(i);
+    }
+    print_string("Testing iterate parameter, setting value 2");
+    for(i from 1 to 10, iterate=2) {
+        print_int(i);
+    }
+    print_string("Testing negative range as interval start");
+    for(i from -10 to 10) {
+        print_int(i);
+    }
+    print_string("Testing negative range as interval end, not start (this should not output anything)");
+    for(i from 10 to -10) {
+        print_int(i);
+    } 
+    print_string("Testing negative range on both start and end");
+    for(i from -10 to -5) {
+        print_int(i);
+    }
+    print_string("Testing negative ranges with iterate=2");
+    for(i from -10 to -2, iterate=2) {
+        print_int(i);
+    }
+    return 0;
+}
