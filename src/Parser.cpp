@@ -86,7 +86,7 @@ std::unique_ptr<GenericAST> Parser::ParseTermExpr(){
             return AddSubExpr;
         }
         else{
-            std::cout << numeric_value_int<<std::endl;
+            // std::cout << numeric_value_int<<std::endl;
             return LogErrorPrototype("Expected ')'");
         }
     }
@@ -324,13 +324,13 @@ std::unique_ptr<GenericAST> Parser::ParseConditionExpr(){
         get_next_token();
     }
     auto left_side = ParseTermExpr();
-    //TODO add logic for single term binary expression (like if (a))
     if (current_token == ')') {
-        if (negate_left_side) {
-            return std::make_unique<BinaryExprAST>(token_eq, std::move(left_side), nullptr);
-        } else {
-            return std::make_unique<BinaryExprAST>(token_ne, std::move(left_side), nullptr);
-        }
+        // if (negate_left_side) {
+        //     return std::make_unique<BinaryExprAST>(token_eq, std::move(left_side), nullptr);
+        // } else {
+        //     return std::make_unique<BinaryExprAST>(token_ne, std::move(left_side), nullptr);
+        // }
+        return LogErrorPrototype("Expected binary expression as condition");
     }
     if (current_token == '<' || current_token == '>' || current_token == token_le || current_token == token_ge || current_token == token_eq || current_token == token_ne) {
         char op = current_token;
@@ -509,7 +509,7 @@ std::unique_ptr<GenericAST> Parser::ParseFunctionPrototypeArgumentExpr() {
                     // return argument;
                 }
                 else{
-                    std::cout << argumentType << std::endl;
+                    // std::cout << argumentType << std::endl;
                     return LogErrorPrototype("Unexpected argument type");
                 }
             } else {
@@ -550,7 +550,7 @@ std::unique_ptr<GenericAST> Parser::ParseFunctionPrototypeArgumentExpr() {
                     return argument;
                 }
                 else if (argumentType == "array") {
-                    std::cout << arrayType << " "  << arraySize << std::endl;
+                    // std::cout << arrayType << " "  << arraySize << std::endl;
                     if (arrayType == "none" || arraySize == -1) {
                         return LogErrorPrototype("Invalid or no parameters provided for array argument");
                     }
@@ -589,22 +589,22 @@ std::unique_ptr<FunctionPrototypeAST> Parser::ParseFunctionPrototypeExpr(int fun
 
 std::unique_ptr<GenericAST> Parser::ParseStatementExpr(){
     if (current_token == token_if){
-        std::cout << "Detected 'if'. Parsing if statement" << std::endl;
+        // std::cout << "Detected 'if'. Parsing if statement" << std::endl;
         return ParseIfStatementExpr();
     }
     else if (current_token == token_while){
-        std::cout << "Detected 'while'. Parsing while statement" << std::endl;
+        // std::cout << "Detected 'while'. Parsing while statement" << std::endl;
         return ParseWhileStatementExpr();
     }
     else if (current_token == token_do) {
-        std::cout << "Detected 'do...while'. Parsing do...while statement" << std::endl;
+        // std::cout << "Detected 'do...while'. Parsing do...while statement" << std::endl;
         return ParseDoWhileStatementExpr();
     }
     else if (current_token == token_for) {
         return ParseForStatementExpr();
     }
     else if (current_token == token_identifier || isTypeDeclaration(current_token)){
-        std::cout << "Detected identifier or type declaration. Parsing declaration or assignment" << std::endl;
+        // std::cout << "Detected identifier or type declaration. Parsing declaration or assignment" << std::endl;
         auto declarationOrAssignment = ParseDeclarationOrAssignmentExpr();
         return declarationOrAssignment;
 
@@ -614,7 +614,7 @@ std::unique_ptr<GenericAST> Parser::ParseStatementExpr(){
         // } else {return LogErrorPrototype("Expected ';' after statement");}
     }
     else if (current_token == token_return){
-        std::cout << "Detected return statement\n";
+        // std::cout << "Detected return statement\n";
         auto returnStatement = ParseReturnExpr();
         if (current_token == ';'){
             get_next_token();
@@ -685,7 +685,7 @@ std::vector<std::unique_ptr<GenericAST>> Parser::ParseFile(){
         switch(current_token){
             case token_eof:
             {
-                std::cout << "EOF detected" << std::endl;
+                // std::cout << "EOF detected" << std::endl;
                 return std::move(ASTarray);
             }
             case token_identifier:
@@ -696,7 +696,7 @@ std::vector<std::unique_ptr<GenericAST>> Parser::ParseFile(){
             case token_array:
             case token_void:
             {
-                std::cout << "Detected type definition. Parsing a declaration or assignment" << std::endl;
+                // std::cout << "Detected type definition. Parsing a declaration or assignment" << std::endl;
                 // auto function = ParseFunctionExpr();
                 auto astNode = ParseDeclarationOrAssignmentExpr();
                 ASTarray.push_back(std::move(astNode));
@@ -704,22 +704,22 @@ std::vector<std::unique_ptr<GenericAST>> Parser::ParseFile(){
             }
             case token_global:
             {
-                std::cout << "Detected global variable declaration\n";
+                // std::cout << "Detected global variable declaration\n";
                 auto globalVariable = ParseGlobalVariableExpr();
                 ASTarray.push_back(std::move(globalVariable));
                 break;
             }
             case token_import:
             {
-                std::cout << "Detected import statement\n";
+                // std::cout << "Detected import statement\n";
                 auto importStatement = ParseImportExpr();
                 ASTarray.push_back(std::move(importStatement));
                 break;
             }
             default:
             {
-                std::cout<<"Expected to find EOF of literal token. Found " << current_token << " or " << (char)current_token << std::endl;
-                std::cout << identifier_string << std::endl;
+                // std::cout<<"Expected to find EOF of literal token. Found " << current_token << " or " << (char)current_token << std::endl;
+                // std::cout << identifier_string << std::endl;
                 return LogErrorPrototypeVector("Unexpected token encountered while parsing");
             }
         }

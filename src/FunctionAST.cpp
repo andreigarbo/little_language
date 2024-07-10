@@ -180,6 +180,11 @@
             } else {
                 builder.CreateRetVoid();
             }
+        } else if (hasReturn) {
+            llvm::Type* returnType = function->getReturnType();
+            if (returnType->isVoidTy()){
+                return LogErrorValue("Expected no return statement for void function");
+            }
         }
 
         variableTable.exitScope();
@@ -237,6 +242,17 @@
                 return LogErrorValue("Error generating code for argument");
             }
             codegenArgValues.push_back(codegenArgValue);
+        }
+
+        //checking if arguments are typed correctly
+        llvm::FunctionType* functionType = function->getFunctionType();
+        for (unsigned i = 0; i < codegenArgValues.size(); ++i) {
+            llvm::Type* paramType = functionType->getParamType(i);
+            llvm::Type* argType = codegenArgValues[i]->getType();
+            
+            if (paramType != argType) {
+                return LogErrorValue(("Mismatched argument types provided in call to function " + callee).c_str());
+            }
         }
 
         //return function call, assign it to temp var if non void

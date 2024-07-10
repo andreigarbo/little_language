@@ -52,7 +52,7 @@ int main(int ac, char** argv) {
         return -1;
     }
 
-    std::cout << "Parsed file " + filename + "\n";
+    std::cout << "Parsing file " + filename + "\n";
 
     LLVMState &llvmState = LLVMState::getInstance();
 
@@ -76,9 +76,9 @@ int main(int ac, char** argv) {
         a->codegen();
     }
 
-    std::cout << "\nGenerated code\n\n";
+    // std::cout << "\nGenerated code\n\n";
 
-    llvmState.printModule();
+    // llvmState.printModule();
 
     llvmState.printModuleToFile("interm.ll");
 

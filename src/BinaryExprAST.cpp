@@ -69,6 +69,9 @@ llvm::Value* BinaryExprAST::codegen(){
                 return builder.CreateICmpEQ(leftInt, rightInt, "cmptmp");
             case token_ne:
                 return builder.CreateICmpNE(leftInt, rightInt, "cmptmp");
+            default:
+                return LogErrorValue("Invalid operation for specified data type");
+
         }
     }
     //meaning FloatAST on both sides of operation
@@ -84,8 +87,6 @@ llvm::Value* BinaryExprAST::codegen(){
                 return builder.CreateFMul(leftFloat, rightFloat, "multmp");
             case '/':
                 return builder.CreateFDiv(leftFloat, rightFloat, "divtmp");
-            case '%':
-                return builder.CreateFRem(leftFloat, rightFloat, "modtmp");
             case '<':
                 return builder.CreateFCmpULT(leftFloat, rightFloat, "cmptmp");
             case '>':
@@ -98,6 +99,8 @@ llvm::Value* BinaryExprAST::codegen(){
                 return builder.CreateFCmpUEQ(leftFloat, rightFloat, "cmptmp");
             case token_ne:
                 return builder.CreateFCmpUNE(leftFloat, rightFloat, "cmptmp");
+            default:
+                return LogErrorValue("Invalid operation for specified data type");
         }
     }
     else {
